@@ -2,12 +2,9 @@ cmake_minimum_required(VERSION 3.2)
 
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(EXECUTABLE_NAME "CSE167_Project1")
+set(EXECUTABLE_NAME "CSE167_Project2")
 
 project(${EXECUTABLE_NAME})
-#set(main main.cpp main.h)
-#set(main GLFW_Rasterizer)
-
 ################################################################################
 # Libraries
 ################################################################################

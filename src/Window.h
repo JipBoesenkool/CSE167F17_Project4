@@ -5,7 +5,7 @@
 
 #include <GLFW/glfw3.h>
 #include "Cube.h"
-#include "OBJObject.h"
+#include "Model.h"
 #include "Light.h"
 #include "shader.h"
 

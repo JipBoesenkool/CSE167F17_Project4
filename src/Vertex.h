@@ -2,16 +2,16 @@
 // Created by Jip Boesenkool on 21/10/2017.
 //
 
-#ifndef CSE167_PROJECT2_VERTEX_H
-#define CSE167_PROJECT2_VERTEX_H
+#ifndef VERTEX_H
+#define VERTEX_H
 
-#include <vector>
 #include "glm/glm.hpp"
 
-struct Vertex {
-	glm::vec3 position;
-	glm::vec3 normal;
-	//glm::vec2 TexCoords;
+struct Vertex
+{
+	glm::vec3 m_position;
+	glm::vec3 m_normal;
+	glm::vec2 m_texCoords;
 };
 
-#endif //CSE167_PROJECT2_VERTEX_H
+#endif //VERTEX_H

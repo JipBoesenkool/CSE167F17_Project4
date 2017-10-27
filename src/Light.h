@@ -19,6 +19,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
+/*
 struct Light {
     glm::vec3 m_position;
     glm::vec3 m_ambient;
@@ -53,24 +54,20 @@ struct Light {
         glUniform3f(lightSpecularLoc, m_specular.x, m_specular.y, m_specular.z);
     }
 };
+ */
 
 struct PointLight {
     glm::vec3 m_position;
-
-    glm::vec3 m_ambient;
-    glm::vec3 m_diffuse;
-    glm::vec3 m_specular;
-
-    GLfloat m_constant;
-    GLfloat m_linear;
-    GLfloat m_quadratic;
-
+	glm::vec3 m_color;
     void SetUniform(GLint shader)
     {
 		glUseProgram(shader);
         GLint lightPositionLoc  = glGetUniformLocation(shader, "light.position");
         glUniform3f(lightPositionLoc, m_position.x, m_position.y, m_position.z);
+		GLint colorPositionLoc  = glGetUniformLocation(shader, "light.color");
+		glUniform3f(lightPositionLoc, m_color.r, m_color.g, m_color.b);
 
+		/*
         GLint lightAmbientLoc   = glGetUniformLocation(shader, "light.ambient");
         GLint lightDiffuseLoc   = glGetUniformLocation(shader, "light.diffuse");
         GLint lightSpecularLoc  = glGetUniformLocation(shader, "light.specular");
@@ -84,23 +81,18 @@ struct PointLight {
         glUniform1f(lightConstantLoc,  m_constant);
         glUniform1f(lightLinearLoc,    m_linear);
         glUniform1f(lightQuadraticLoc, m_quadratic);
+        */
     }
 };
 
 struct SpotLight {
-    glm::vec3 m_position;
+    //glm::vec3 m_position;
+	glm::vec3 m_color;
     glm::vec3 m_direction;
-
-    glm::vec3 m_ambient;
-    glm::vec3 m_diffuse;
-    glm::vec3 m_specular;
-
-    GLfloat m_constant;
-    GLfloat m_linear;
-    GLfloat m_quadratic;
-
     GLfloat m_cutoffAngle;
+	GLfloat m_exponent;
 
+	/*
     void SetUniform(GLint shader)
     {
 		glUseProgram(shader);
@@ -126,15 +118,14 @@ struct SpotLight {
         GLint lightCutoffLoc = glGetUniformLocation(shader, "light.cutoff");
         glUniform1f(lightCutoffLoc, glm::cos( glm::radians(m_cutoffAngle) ) );
     }
+    */
 };
 
 struct DirLight {
     glm::vec3 m_direction;
+	glm::vec3 m_color;
 
-    glm::vec3 m_ambient;
-    glm::vec3 m_diffuse;
-    glm::vec3 m_specular;
-
+	/*
     void SetUniform(GLint shader)
     {
 		glUseProgram(shader);
@@ -148,6 +139,7 @@ struct DirLight {
         glUniform3f(lightDiffuseLoc,  m_diffuse.x,   m_diffuse.y,   m_diffuse.z);
         glUniform3f(lightSpecularLoc, m_specular.x,  m_specular.y,  m_specular.z);
     }
+    */
 };
 
 #endif //LIGHT_H

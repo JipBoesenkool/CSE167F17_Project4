@@ -17,11 +17,14 @@ GLint activeShader;
 
 //Lights
 DirLight    dirLight;
-Model *dirLightObj;
 
-//pointLights
-PointLight pointLights[4];
+//pointLight
+PointLight pointLight;
 Model *pointLightObj;
+
+//Spotlight
+
+Model *spotLightObj;
 
 // Default camera parameters
 glm::vec3 cam_pos(0.0f, 0.0f, 20.0f);		// e  | Position of camera
@@ -50,11 +53,9 @@ void Window::initialize_objects()
 	// Load the shader program. Make sure you have the correct filepath up top
 	shaderProgram = LoadShaders("../resources/shaders/shader.vert", "../resources/shaders/shader.frag");
 	shaderNormalProgram = LoadShaders("../resources/shaders/shaderNormal.vert", "../resources/shaders/shaderNormal.frag");
-	//shaderPhongProgram = LoadShaders("../resources/shaders/lighting.vert", "../resources/shaders/lighting.frag");
-
-	//shaderDirLightProgram = LoadShaders("../resources/shaders/materialColors.vert", "../resources/shaders/dirLight.frag");
+	shaderPhongProgram = LoadShaders("../resources/shaders/lightingBackup.vert", "../resources/shaders/lightingBackup.frag");
 	shaderVisualLightProgram = LoadShaders("../resources/shaders/lamp.vert", "../resources/shaders/lamp.frag");
-	activeShader = shaderNormalProgram;
+	activeShader = shaderPhongProgram;
 
 	//dirLightObj = new Model("../resources/models/cone.obj");
 	bunny = new Model("../resources/models/bunny.obj");
@@ -68,48 +69,23 @@ void Window::initialize_objects()
 
 	cube = new Cube();
 
-	/*
-	//Set up lights
-	glUseProgram(shaderDirLightProgram);
-	dirLight.m_direction = glm::vec3(-0.5f, -1.0f, -0.5f);
-	dirLight.m_ambient = glm::vec3(0.2f);
-	dirLight.m_diffuse = glm::vec3(0.5f);
-	dirLight.m_specular = glm::vec3(1.0f);
-	dirLight.SetUniform(shaderDirLightProgram);
-	bunny->m_material.SetUniform(shaderDirLightProgram);
-	 */
-
-	/*
-	// Positions of the point lights
-	pointLights[0].m_position = glm::vec3( 0.7f,  0.2f,  1.0f);
-	pointLights[1].m_position = glm::vec3( 2.3f, -3.3f, -4.0f);
-	pointLights[2].m_position = glm::vec3(-4.0f,  2.0f, -12.0f);
-	pointLights[3].m_position = glm::vec3( 0.0f,  0.0f, -3.0f);
+	//Set up static camera
 	glUseProgram(shaderPhongProgram);
+	GLint viewPosLoc     = glGetUniformLocation(shaderPhongProgram, "viewPos");
+	glUniform3f(viewPosLoc, cam_pos.x, cam_pos.y, cam_pos.z);
 
-	for(int i = 0; i < 4; i++)
-	{
-		pointLights[i].m_ambient = glm::vec3(0.2f); // Low influence
-		pointLights[i].m_diffuse = glm::vec3(0.5f);
-		pointLights[i].m_specular = glm::vec3(1.0f);
+	//Light objects
+	pointLightObj = new Model("../resources/models/sphere.obj");
+	pointLight.m_position = glm::vec3(-2.0f, 0.0f, 0.0f);
+	pointLight.m_color = glm::vec3(1.0f, 1.0f, 1.0f);
+	pointLightObj->m_local.m_position = pointLight.m_position;
+	glUseProgram(shaderPhongProgram);
+	pointLight.SetUniform(shaderPhongProgram);
+	bunny->m_material.SetUniform(shaderPhongProgram);
 
-		pointLights[i].m_constant    = 1.0f;
-		pointLights[i].m_linear      = 0.09f;
-		pointLights[i].m_quadratic   = 0.032f;
-
-		// Point light
-		std::string number = std::to_string(i);
-		glUniform3f(glGetUniformLocation(shaderPhongProgram, ("pointLights[" + number + "].position").c_str()), pointLights[i].m_position.x, pointLights[i].m_position.y, pointLights[i].m_position.z);
-
-		glUniform3f(glGetUniformLocation(shaderPhongProgram, ("pointLights[" + number + "].ambient").c_str()), pointLights[i].m_ambient.x, pointLights[i].m_ambient.y, pointLights[i].m_ambient.z);
-		glUniform3f(glGetUniformLocation(shaderPhongProgram, ("pointLights[" + number + "].diffuse").c_str()), pointLights[i].m_diffuse.x, pointLights[i].m_diffuse.y, pointLights[i].m_diffuse.z);
-		glUniform3f(glGetUniformLocation(shaderPhongProgram, ("pointLights[" + number + "].specular").c_str()), pointLights[i].m_specular.x, pointLights[i].m_specular.y, pointLights[i].m_specular.z);
-
-		glUniform1f(glGetUniformLocation(shaderPhongProgram, ("pointLights[" + number + "].constant").c_str()), pointLights[i].m_constant);
-		glUniform1f(glGetUniformLocation(shaderPhongProgram, ("pointLights[" + number + "].linear").c_str()), pointLights[i].m_linear);
-		glUniform1f(glGetUniformLocation(shaderPhongProgram, ("pointLights[" + number + "].quadratic").c_str()), pointLights[i].m_quadratic);
-	}
-	 */
+	glUseProgram(shaderVisualLightProgram);
+	GLint colorLoc     = glGetUniformLocation(shaderVisualLightProgram, "color");
+	glUniform3f(colorLoc, pointLight.m_color.r, pointLight.m_color.g, pointLight.m_color.b);
 
 	//dragon.parse("../resources/models/dragon.obj");
 	//bear.parse("../resources/models/bear.obj");
@@ -124,7 +100,7 @@ void Window::clean_up()
 	delete(bunny);
 	glDeleteProgram(shaderProgram);
 	glDeleteProgram(shaderNormalProgram);
-	//glDeleteProgram(shaderPhongProgram);
+	glDeleteProgram(shaderPhongProgram);
 }
 
 GLFWwindow* Window::create_window(int width, int height)
@@ -204,22 +180,17 @@ void Window::display_callback(GLFWwindow* window)
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	// Use the shader of programID
-	glUseProgram(shaderProgram);
+	//glUseProgram(shaderProgram);
 	// Render the cube
 	//cube->draw(shaderProgram);
 
-	//glUseProgram(shaderDirLightProgram);
 	// Use coresponding shader when setting uniforms/drawing objects
-	//GLint viewPosLoc     = glGetUniformLocation(shaderDirLightProgram, "viewPos");
-	//glUniform3f(viewPosLoc, cam_pos.x, cam_pos.y, cam_pos.z);
-
 	glUseProgram(activeShader);
 	activeObject->draw(activeShader);
 
 	//Draw the lights
 	glUseProgram(shaderVisualLightProgram);
-	dirLightObj->draw(shaderVisualLightProgram);
-
+	pointLightObj->draw(shaderVisualLightProgram);
 
 	// Gets events, including input such as keyboard and mouse or window resizing
 	glfwPollEvents();
@@ -275,6 +246,7 @@ void Window::key_callback(GLFWwindow* window, int key, int scancode, int action,
 		if (key == GLFW_KEY_F1)
 		{
 			activeObject = bunny;
+			bunny->m_material.SetUniform(shaderPhongProgram);
 		}
 		if (key == GLFW_KEY_F2)
 		{
@@ -286,11 +258,12 @@ void Window::key_callback(GLFWwindow* window, int key, int scancode, int action,
 				dragon->m_material = Material{
 						glm::vec3(0.0f, 0.0f, 0.0f),
 						glm::vec3(0.5f, 0.4f, 0.4f),
-						glm::vec3(0.0f, 0.00f, 0.0f),
+						glm::vec3(0.0f, 0.0f, 0.0f),
 						0.0f
 				};
 			}
 			activeObject = dragon;
+			dragon->m_material.SetUniform(shaderPhongProgram);
 		}
 		if (key == GLFW_KEY_F3)
 		{
@@ -307,6 +280,7 @@ void Window::key_callback(GLFWwindow* window, int key, int scancode, int action,
 				};
 			}
 			activeObject = bear;
+			bear->m_material.SetUniform(shaderPhongProgram);
 		}
 		//Reset transform
 		if (key == GLFW_KEY_R)

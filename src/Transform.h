@@ -16,10 +16,11 @@ class Transform
 {
 //Members
 private:
+	bool updateMatrix = true;
+public:
 	glm::vec3 m_position;
 	glm::vec3 m_rotation;
 	glm::vec3 m_scale;
-	bool updateMatrix = true;
 //Getters & Setters
 public:
 	glm::mat4 m_matrix = glm::mat4(1.0f);

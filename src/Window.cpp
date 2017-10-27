@@ -6,25 +6,19 @@ Model *bunny;
 Model *dragon;
 Model *bear;
 Model* activeObject;
+Model* selectedObject;
 
-GLint shaderProgram;
+//GLint shaderProgram;
 GLint shaderNormalProgram;
 GLint shaderPhongProgram;
 GLint shaderVisualLightProgram;
-GLint shaderPointLightProgram;
-GLint shaderDirLightProgram;
 GLint activeShader;
 
 //Lights
-DirLight    dirLight;
-
-//pointLight
-PointLight pointLight;
-Model *pointLightObj;
-
-//Spotlight
-
-Model *spotLightObj;
+PointLightModel *pointLightObj;
+SpotLightModel *spotLightObj;
+DirLightModel *dirLightObj;
+int selectedLight = 0;
 
 // Default camera parameters
 glm::vec3 cam_pos(0.0f, 0.0f, 20.0f);		// e  | Position of camera
@@ -51,13 +45,12 @@ glm::mat4 Window::V;
 void Window::initialize_objects()
 {
 	// Load the shader program. Make sure you have the correct filepath up top
-	shaderProgram = LoadShaders("../resources/shaders/shader.vert", "../resources/shaders/shader.frag");
+	//shaderProgram = LoadShaders("../resources/shaders/shader.vert", "../resources/shaders/shader.frag");
 	shaderNormalProgram = LoadShaders("../resources/shaders/shaderNormal.vert", "../resources/shaders/shaderNormal.frag");
-	shaderPhongProgram = LoadShaders("../resources/shaders/lightingBackup.vert", "../resources/shaders/lightingBackup.frag");
+	shaderPhongProgram = LoadShaders("../resources/shaders/phong.vert", "../resources/shaders/phong.frag");
 	shaderVisualLightProgram = LoadShaders("../resources/shaders/lamp.vert", "../resources/shaders/lamp.frag");
 	activeShader = shaderPhongProgram;
 
-	//dirLightObj = new Model("../resources/models/cone.obj");
 	bunny = new Model("../resources/models/bunny.obj");
 	//The third object should have significant diffuse and specular reflection components.
 	bunny->m_material = Material{
@@ -67,40 +60,40 @@ void Window::initialize_objects()
 			76.8f
 	};
 
-	cube = new Cube();
-
 	//Set up static camera
 	glUseProgram(shaderPhongProgram);
 	GLint viewPosLoc     = glGetUniformLocation(shaderPhongProgram, "viewPos");
 	glUniform3f(viewPosLoc, cam_pos.x, cam_pos.y, cam_pos.z);
+	GLint selLightLoc     = glGetUniformLocation(shaderPhongProgram, "selectedLight");
+	glUniform1f(selLightLoc, 0.0f);
 
 	//Light objects
-	pointLightObj = new Model("../resources/models/sphere.obj");
-	pointLight.m_position = glm::vec3(-2.0f, 0.0f, 0.0f);
-	pointLight.m_color = glm::vec3(1.0f, 1.0f, 1.0f);
-	pointLightObj->m_local.m_position = pointLight.m_position;
+	//Point light
+	pointLightObj = new PointLightModel(shaderPhongProgram, glm::vec3(-2.0f, 0.0f, 1.0f));
+	spotLightObj = new SpotLightModel(shaderPhongProgram, glm::vec3(2.0f, 0.0f, 1.0f));
+	dirLightObj = new DirLightModel(shaderPhongProgram, glm::vec3(1.0f));
+
 	glUseProgram(shaderPhongProgram);
-	pointLight.SetUniform(shaderPhongProgram);
 	bunny->m_material.SetUniform(shaderPhongProgram);
 
-	glUseProgram(shaderVisualLightProgram);
-	GLint colorLoc     = glGetUniformLocation(shaderVisualLightProgram, "color");
-	glUniform3f(colorLoc, pointLight.m_color.r, pointLight.m_color.g, pointLight.m_color.b);
-
-	//dragon.parse("../resources/models/dragon.obj");
-	//bear.parse("../resources/models/bear.obj");
-
 	activeObject = bunny;
+	selectedObject = bunny;
 }
 
 // Treat this as a destructor function. Delete dynamically allocated memory here.
 void Window::clean_up()
 {
-	delete(cube);
 	delete(bunny);
-	glDeleteProgram(shaderProgram);
+	delete(dragon);
+	delete(bear);
+
+	delete(dirLightObj);
+	delete(spotLightObj);
+	delete(pointLightObj);
+
 	glDeleteProgram(shaderNormalProgram);
 	glDeleteProgram(shaderPhongProgram);
+	glDeleteProgram(shaderVisualLightProgram);
 }
 
 GLFWwindow* Window::create_window(int width, int height)
@@ -169,9 +162,7 @@ void Window::resize_callback(GLFWwindow* window, int width, int height)
 
 void Window::idle_callback()
 {
-	// Call the update function the cube
-	//cube->update();
-	//activeObject->update();
+	selectedObject->Update();
 }
 
 void Window::display_callback(GLFWwindow* window)
@@ -179,18 +170,28 @@ void Window::display_callback(GLFWwindow* window)
 	// Clear the color and depth buffers
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	// Use the shader of programID
-	//glUseProgram(shaderProgram);
-	// Render the cube
-	//cube->draw(shaderProgram);
-
 	// Use coresponding shader when setting uniforms/drawing objects
 	glUseProgram(activeShader);
-	activeObject->draw(activeShader);
+
+	// Use coresponding shader when setting uniforms/drawing objects
+	GLint viewPosLoc     = glGetUniformLocation(activeShader, "viewPos");
+	glUniform3f(viewPosLoc, cam_pos.x, cam_pos.y, cam_pos.z);
+	activeObject->Draw( activeShader );
 
 	//Draw the lights
-	glUseProgram(shaderVisualLightProgram);
-	pointLightObj->draw(shaderVisualLightProgram);
+	activeObject->Draw( shaderVisualLightProgram );
+	if(selectedLight == 1 || selectedLight == 0)
+	{
+		dirLightObj->Draw( shaderVisualLightProgram );
+	}
+	if(selectedLight == 2 || selectedLight == 0)
+	{
+		pointLightObj->Draw( shaderVisualLightProgram );
+	}
+	if(selectedLight == 3 || selectedLight == 0)
+	{
+		spotLightObj->Draw( shaderVisualLightProgram );
+	}
 
 	// Gets events, including input such as keyboard and mouse or window resizing
 	glfwPollEvents();
@@ -287,17 +288,49 @@ void Window::key_callback(GLFWwindow* window, int key, int scancode, int action,
 		{
 			if(mods == GLFW_MOD_SHIFT)
 			{
-				activeObject->m_world.ResetRotation();
-				activeObject->m_world.ResetScale();
+				selectedObject->m_world.ResetRotation();
+				selectedObject->m_world.ResetScale();
 
-				activeObject->m_local.ResetRotation();
-				activeObject->m_local.ResetScale();
+				selectedObject->m_local.ResetRotation();
+				selectedObject->m_local.ResetScale();
 			}
 			else
 			{
-				activeObject->m_world.ResetPosition();
-				activeObject->m_local.ResetPosition();
+				selectedObject->m_world.ResetPosition();
+				selectedObject->m_local.ResetPosition();
 			}
+		}
+		//Toggle selectable object
+		if (key == GLFW_KEY_1)
+		{
+			selectedObject = dirLightObj;
+			selectedLight = 1;
+			GLint selLightLoc     = glGetUniformLocation(shaderPhongProgram, "selectedLight");
+			glUniform1f(selLightLoc, 1.0f);
+		}
+		if (key == GLFW_KEY_2)
+		{
+			selectedObject = pointLightObj;
+			selectedLight = 2;
+			GLint selLightLoc     = glGetUniformLocation(shaderPhongProgram, "selectedLight");
+			glUniform1f(selLightLoc, 2.0f);
+		}
+		if (key == GLFW_KEY_3)
+		{
+			selectedObject = spotLightObj;
+			selectedLight = 3;
+			GLint selLightLoc     = glGetUniformLocation(shaderPhongProgram, "selectedLight");
+			glUniform1f(selLightLoc, 3.0f);
+		}
+		if (key == GLFW_KEY_0)
+		{
+			selectedObject = activeObject;
+		}
+		if (key == GLFW_KEY_9)
+		{
+			selectedLight = 0;
+			GLint selLightLoc     = glGetUniformLocation(shaderPhongProgram, "selectedLight");
+			glUniform1f(selLightLoc, 0.0f);
 		}
 	}
 
@@ -310,13 +343,13 @@ void Window::key_callback(GLFWwindow* window, int key, int scancode, int action,
 			{
 				glm::vec3 dir;
 				(mods == 2) ? dir = glm::vec3(1,0,0) : dir = glm::vec3(-1,0,0);
-				activeObject->m_local.Move(dir);
+				selectedObject->m_local.Move(dir);
 			}
 			else if(modelState == ModelState::Rotation)
 			{
 				glm::vec3 rot;
 				(mods == 4) ? rot = glm::vec3(-10.0f,0,0) : rot = glm::vec3(10.0f,0,0);
-				activeObject->m_local.Rotate( rot );
+				selectedObject->m_local.Rotate( rot );
 			}
 		}
 		if (key == GLFW_KEY_Y)
@@ -325,13 +358,13 @@ void Window::key_callback(GLFWwindow* window, int key, int scancode, int action,
 			{
 				glm::vec3 dir;
 				(mods == 2) ? dir = glm::vec3(0,1,0) : dir = glm::vec3(0,-1,0);
-				activeObject->m_local.Move(dir);
+				selectedObject->m_local.Move(dir);
 			}
 			else if(modelState == ModelState::Rotation)
 			{
 				glm::vec3 rot;
 				(mods == 4) ? rot = glm::vec3(0,-1.0f,0) : rot = glm::vec3(0,1.0f,0);
-				activeObject->m_local.Rotate( rot );
+				selectedObject->m_local.Rotate( rot );
 			}
 
 		}
@@ -341,13 +374,13 @@ void Window::key_callback(GLFWwindow* window, int key, int scancode, int action,
 			{
 				glm::vec3 dir;
 				(mods == 2) ? dir = glm::vec3(0,0,1) : dir = glm::vec3(0,0,-1);
-				activeObject->m_local.Move(dir);
+				selectedObject->m_local.Move(dir);
 			}
 			else if(modelState == ModelState::Rotation)
 			{
 				glm::vec3 rot;
 				(mods == 4) ? rot =glm::vec3(0,0,10.0f): rot=glm::vec3(0,0,-10.0f);
-				activeObject->m_local.Rotate( rot );
+				selectedObject->m_local.Rotate( rot );
 			}
 		}
 		//Rotation
@@ -355,14 +388,14 @@ void Window::key_callback(GLFWwindow* window, int key, int scancode, int action,
 		{
 			glm::vec3 rot;
 			(mods == 4) ? rot =glm::vec3(0,0,10.0f): rot=glm::vec3(0,0,-10.0f);
-			activeObject->m_world.Rotate( rot );
+			selectedObject->m_world.Rotate( rot );
 		}
 		//Scale
 		if (key == GLFW_KEY_S)
 		{
 			float scale = 2;
 			(mods == GLFW_MOD_SHIFT) ? scale = 2 : scale = 0.5f;
-			activeObject->m_local.Scale(scale);
+			selectedObject->m_local.Scale(scale);
 		}
 	}
 }
@@ -397,7 +430,7 @@ void Window::mouse_callback(GLFWwindow* window, double xpos, double ypos)
 				float sensitivity = 1.0f;
 				float rotAngle = velocity * sensitivity;
 				//activeObject->m_world.Rotate(rotAngle * rotAxis);
-				activeObject->m_world.m_matrix = activeObject->m_world.m_matrix * glm::rotate(glm::mat4(1.0f), rotAngle / 180.0f * glm::pi<float>(), rotAxis);
+				selectedObject->m_world.m_matrix = selectedObject->m_world.m_matrix * glm::rotate(glm::mat4(1.0f), rotAngle / 180.0f * glm::pi<float>(), rotAxis);
 			}
 		}
 		break;
@@ -410,7 +443,7 @@ void Window::mouse_callback(GLFWwindow* window, double xpos, double ypos)
 			xoffset *= sensitivity;
 			yoffset *= sensitivity;
 
-			activeObject->m_local.Move( glm::vec3(xoffset, yoffset, 0) );
+			selectedObject->m_local.Move( glm::vec3(xoffset, yoffset, 0) );
 		};
 		break;
 	}
@@ -425,7 +458,7 @@ void Window::scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 	{
 		float sensitivity = 0.05;
 		yoffset *= sensitivity;
-		activeObject->m_local.Move( glm::vec3(0, 0, -yoffset) );
+		selectedObject->m_local.Move( glm::vec3(0, 0, -yoffset) );
 	}
 }
 

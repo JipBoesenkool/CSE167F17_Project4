@@ -9,6 +9,10 @@
 #include "Light.h"
 #include "shader.h"
 
+#include "SpotLightModel.h"
+#include "PointLightModel.h"
+#include "DirLightModel.h"
+
 class Window
 {
 public:

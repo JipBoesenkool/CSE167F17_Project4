@@ -6,7 +6,7 @@ Build instructions:
 2.windows     Open up cmd  
 2.            Navigate to root project folder  
 3.            git submodule init  
-4.            git submodule update  
+4.            git submodule Update
 5.            mkdir build  
 6.            cd build  
 7.mac/linux   cmake ..  

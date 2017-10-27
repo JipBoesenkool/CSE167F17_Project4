@@ -33,8 +33,8 @@ public:
 	~Model();
 
 	void SetupMesh();
-	void draw(GLuint shader);
-	void update();
+	virtual void Draw( GLuint shader );
+	virtual void Update();
 };
 
 #endif

@@ -53,7 +53,7 @@ void Model::SetupMesh()
 	glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, 0 );
 }
 
-void Model::draw(GLuint shader)
+void Model::Draw( GLuint shader )
 {
 	// We need to calculate this because modern OpenGL does not keep track of any matrix other than the viewport (D)
 	// Consequently, we need to forward the projection, view, and model matrices to the shader programs
@@ -68,17 +68,17 @@ void Model::draw(GLuint shader)
 	glUniformMatrix4fv(uProjection, 1, GL_FALSE, &Window::P[0][0]);
 	glUniformMatrix4fv(uView, 1, GL_FALSE, &Window::V[0][0]);
 	glUniformMatrix4fv(uModel, 1, GL_FALSE, &model[0][0]);
-	// Now draw the cube. We simply need to bind the VAO associated with it.
+	// Now Draw the cube. We simply need to bind the VAO associated with it.
 	glBindVertexArray(m_VAO);
-	// Tell OpenGL to draw with triangles, using 36 indices, the type of the indices, and the offset to start from
+	// Tell OpenGL to Draw with triangles, using 36 indices, the type of the indices, and the offset to start from
 	glDrawElements(GL_TRIANGLES, m_mesh.m_indices.size(), GL_UNSIGNED_INT, 0);
-	// Unbind the VAO when we're done so we don't accidentally draw extra stuff or tamper with its bound buffers
+	// Unbind the VAO when we're done so we don't accidentally Draw extra stuff or tamper with its bound buffers
 	glBindVertexArray(0);
 }
 
-void Model::update()
+void Model::Update()
 {
 	//Automatic rotation
-	glm::vec3 rotation = glm::vec3(0, 1.0f, 0);
-	m_local.Rotate(rotation);
+	//glm::vec3 rotation = glm::vec3(0, 1.0f, 0);
+	//m_local.Rotate(rotation);
 }

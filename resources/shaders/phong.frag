@@ -38,7 +38,8 @@ struct SpotLight {
     float linear;
     float quadratic;
 
-    float cuttoff;
+    float cutoff;
+    float outercutoff;
 };
 
 // Functions prototypes
@@ -92,7 +93,6 @@ vec3 CalcDirLight(DirLight light, vec3 normal, vec3 viewDir)
     // Diffuse
     vec3 lightDir = normalize(-light.direction);
     float diff = max(dot(normal, lightDir), 0.0);
-
     vec3 diffuse = light.diffuse * (diff * material.diffuse);
 
     // Specular
@@ -137,41 +137,34 @@ vec3 CalcPointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir)
 // Calculates the color when using a spot light.
 vec3 CalcSpotLight(SpotLight light, vec3 normal, vec3 fragPos, vec3 viewDir)
 {
+    // ambient
+    vec3 ambient = light.ambient * material.diffuse;
+
+    // diffuse
+    vec3 norm = normalize(Normal);
     vec3 lightDir = normalize(light.position - FragPos);
-    // Check if lighting is inside the spotlight cone
+    float diff = max(dot(norm, lightDir), 0.0);
+    vec3 diffuse = light.diffuse * diff * material.diffuse;
+
+    // specular
+    vec3 reflectDir = reflect(-lightDir, norm);
+    float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
+    vec3 specular = light.specular * spec * material.specular;
+
+    // spotlight (soft edges)
     float theta = dot(lightDir, normalize(-light.direction));
+    float epsilon = (light.cutoff - light.outercutoff);
+    float intensity = clamp((theta - light.outercutoff) / epsilon, 0.0, 1.0);
+    diffuse  *= intensity;
+    specular *= intensity;
 
-    if(theta > light.cuttoff) // Remember that we're working with angles as cosines instead of degrees so a '>' is used.
-    {
-        vec3 reflectDir = reflect(-lightDir, normal);
+    // attenuation
+    float distance    = length(light.position - FragPos);
+    float attenuation = 1.0 / (light.constant + light.linear * distance + light.quadratic * (distance * distance));
+    //ambient  *= attenuation;
+    diffuse   *= attenuation;
+    specular *= attenuation;
 
-        // Ambient
-        vec3 ambient = light.ambient * material.ambient;
-
-        // Diffuse
-        float diff = max(dot(normal, lightDir), 0.0);
-        vec3 diffuse = light.diffuse * (diff * material.diffuse);
-
-        // Specular
-        float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
-        vec3 specular = light.specular * (spec * material.specular);
-
-        // Attenuation
-        float distance    = length(light.position - FragPos);
-        float attenuation = 1.0f / (light.constant + light.linear * distance + light.quadratic * (distance * distance));
-
-        // Also remove attenuation from ambient, because if we move too far,
-        // the light in spotlight would then be darker than outside (since outside spotlight we have ambient lighting).
-        // ambient  *= attenuation;
-        diffuse  *= attenuation;
-        specular *= attenuation;
-
-        //combined
-        vec3 result = ambient + diffuse + specular;
-        return result;
-    }
-    else
-    {
-        return vec3(0.0f);
-    }
+    vec3 result = ambient + diffuse + specular;
+    return result;
 }

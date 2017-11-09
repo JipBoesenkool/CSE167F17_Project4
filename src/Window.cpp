@@ -60,6 +60,7 @@ void Window::initialize_objects()
 			76.8f
 	};
 
+
 	//Set up static camera
 	glUseProgram(shaderPhongProgram);
 	GLint viewPosLoc     = glGetUniformLocation(shaderPhongProgram, "viewPos");
@@ -70,7 +71,7 @@ void Window::initialize_objects()
 	//Light objects
 	//Point light
 	pointLightObj = new PointLightModel(shaderPhongProgram, glm::vec3(-2.0f, 0.0f, 1.0f));
-	spotLightObj = new SpotLightModel(shaderPhongProgram, glm::vec3(2.0f, 0.0f, 1.0f));
+	spotLightObj = new SpotLightModel(shaderPhongProgram, glm::vec3(0.0f, 2.0f, 0.0f));
 	dirLightObj = new DirLightModel(shaderPhongProgram, glm::vec3(1.0f));
 
 	glUseProgram(shaderPhongProgram);
@@ -396,6 +397,30 @@ void Window::key_callback(GLFWwindow* window, int key, int scancode, int action,
 			float scale = 2;
 			(mods == GLFW_MOD_SHIFT) ? scale = 2 : scale = 0.5f;
 			selectedObject->m_local.Scale(scale);
+		}
+		//Spotlight
+		if (key == GLFW_KEY_W)
+		{
+			float cutoff;
+			(mods == GLFW_MOD_SHIFT) ? cutoff = 1.0f : cutoff = -1.0f;
+			if(selectedObject == spotLightObj)
+			{
+				spotLightObj->m_spotLight.m_cutoff += cutoff;
+				spotLightObj->m_spotLight.m_outercutoff += cutoff;
+			}
+		}
+		if (key == GLFW_KEY_E)
+		{
+			float cutoff;
+			(mods == GLFW_MOD_SHIFT) ? cutoff = 1.0f : cutoff = -1.0f;
+			if(selectedObject == spotLightObj)
+			{
+				spotLightObj->m_spotLight.m_outercutoff += cutoff;
+				if(spotLightObj->m_spotLight.m_outercutoff < spotLightObj->m_spotLight.m_cutoff)
+				{
+					spotLightObj->m_spotLight.m_outercutoff = spotLightObj->m_spotLight.m_cutoff;
+				}
+			}
 		}
 	}
 }

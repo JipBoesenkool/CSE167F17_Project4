@@ -9,7 +9,7 @@ SpotLightModel::SpotLightModel(GLuint shader, glm::vec3 position)
 	m_shader = shader;
 	m_local.m_position = position;
 	m_local.Scale(0.25f);
-	m_local.Rotate( glm::vec3(0.0f,0.0f,-90.0f) );
+	//m_local.Rotate( glm::vec3(0.0f,0.0f,-90.0f) );
 
 	m_spotLight.m_position = m_local.m_position;
 	m_spotLight.m_direction = glm::normalize( glm::vec3(0.0f) - m_spotLight.m_position );
@@ -19,7 +19,8 @@ SpotLightModel::SpotLightModel(GLuint shader, glm::vec3 position)
 	m_spotLight.m_constant    = 1.0f;
 	m_spotLight.m_linear      = 0.007f;
 	m_spotLight.m_quadratic   = 0.0002f;
-	m_spotLight.m_cutoffAngle = 12.5f;
+	m_spotLight.m_cutoff = 12.5f;
+	m_spotLight.m_outercutoff = 17.5f;
 
 	//Set up phong shader
 	glUseProgram(shader);
@@ -37,12 +38,14 @@ void SpotLightModel::Draw( GLuint shader )
 
 void SpotLightModel::Update()
 {
-	glm::mat4 lookAt = glm::lookAt(m_local.m_position, glm::vec3(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-	m_world.m_matrix = lookAt;
-	glm::vec4 lookDir = lookAt * glm::vec4(m_local.m_position, 1.0f);
-	std::cout << lookDir.x << ", " << lookDir.y << ", " << lookDir.z << std::endl;
 	m_spotLight.m_position = m_local.m_position;
-	m_spotLight.m_direction = glm::normalize( glm::vec3(lookDir.x,lookDir.y,lookDir.z) );
+	m_spotLight.m_direction = glm::normalize( glm::vec3(0.0f) - m_local.m_position );
+
+	glm::mat4 translation = glm::translate( glm::mat4( 1.0f ), m_spotLight.m_position );
+	float angle = glm::dot( glm::vec3( 1.0f, 0.0f, 0.0f ), m_spotLight.m_direction );
+	glm::quat direction = glm::angleAxis( acos( angle ), glm::normalize(glm::cross( glm::vec3( 1.0f, 0.0f, 0.0f ), m_spotLight.m_direction )) );
+	glm::quat QuatAroundZ = glm::quat( glm::vec3(0.0,0.0,glm::radians(90.0f)) );
+	m_world.m_matrix = translation * glm::mat4_cast( (direction * QuatAroundZ) );
 
 	//update phong shader
 	glUseProgram(m_shader);

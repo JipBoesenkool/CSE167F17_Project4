@@ -99,7 +99,8 @@ struct SpotLight {
     GLfloat m_linear;
     GLfloat m_quadratic;
 
-    GLfloat m_cutoffAngle;
+    GLfloat m_cutoff;
+	GLfloat m_outercutoff;
 
     void SetUniform(GLint shader)
     {
@@ -124,7 +125,9 @@ struct SpotLight {
         glUniform1f(lightQuadraticLoc, m_quadratic);
 
         GLint lightCutoffLoc = glGetUniformLocation(shader, "spotLight.cutoff");
-        glUniform1f(lightCutoffLoc, glm::cos( glm::radians(m_cutoffAngle) ) );
+        glUniform1f(lightCutoffLoc, glm::cos( glm::radians(m_cutoff) ) );
+		GLint lightOuterCutoffLoc = glGetUniformLocation(shader, "spotLight.outercutoff");
+		glUniform1f(lightOuterCutoffLoc, glm::cos( glm::radians(m_outercutoff) ) );
     }
 };
 

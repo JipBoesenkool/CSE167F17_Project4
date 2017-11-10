@@ -2,12 +2,12 @@
 
 const char* window_title = "Project 3";
 Model* skybox;
-Model *bunny;
+
+Scene *sceneProj3;
 
 //GLint shaderProgram;
 GLint shaderProgram;
 GLint shaderNormalProgram;
-GLint shaderPhongProgram;
 GLint shaderVisualLightProgram;
 GLint shaderSkyBoxProgram;
 GLint activeShader;
@@ -36,41 +36,31 @@ int Window::height;
 glm::mat4 Window::P;
 glm::mat4 Window::V;
 
+GLint Window::shaderPhongProgram;
+
 void Window::initialize_objects()
 {
 	// Load the shader program. Make sure you have the correct filepath up top
 	shaderNormalProgram = LoadShaders("../resources/shaders/shaderNormal.vert", "../resources/shaders/shaderNormal.frag");
-	shaderPhongProgram = LoadShaders("../resources/shaders/fullPhong.vert", "../resources/shaders/fullPhong.frag");
+	Window::shaderPhongProgram = LoadShaders("../resources/shaders/fullPhong.vert", "../resources/shaders/fullPhong.frag");
 	shaderVisualLightProgram = LoadShaders("../resources/shaders/lamp.vert", "../resources/shaders/lamp.frag");
 	shaderSkyBoxProgram = LoadShaders("../resources/shaders/skyBox.vert", "../resources/shaders/skyBox.frag");
-	activeShader = shaderPhongProgram;
-
-	bunny = new Model("../resources/models/bunny.obj");
-	//The third object should have significant diffuse and specular reflection components.
-	bunny->m_material = Material{
-			glm::vec3(1.0f, 0.5f, 0.31f),
-			glm::vec3(1.0f, 0.5f, 0.31f),
-			glm::vec3(0.5f, 0.5f, 0.5f),
-			76.8f
-	};
+	activeShader = Window::shaderPhongProgram;
 
 	//Skybox
 	skybox = new CubeMapModel(shaderSkyBoxProgram, "../resources/textures/skybox");
 
 	//Set up static camera
-	glUseProgram(shaderPhongProgram);
-	GLint viewPosLoc     = glGetUniformLocation(shaderPhongProgram, "viewPos");
+	glUseProgram(Window::shaderPhongProgram);
+	GLint viewPosLoc     = glGetUniformLocation(Window::shaderPhongProgram, "viewPos");
 	glUniform3f(viewPosLoc, camera.Position.x, camera.Position.y, camera.Position.z);
 
 	//Light objects
 	//Point light
-	pointLightObj = new PointLightModel(shaderPhongProgram, glm::vec3(-2.0f, 0.0f, 1.0f));
-	dirLightObj = new DirLightModel(shaderPhongProgram, glm::vec3(1.0f));
+	pointLightObj = new PointLightModel(Window::shaderPhongProgram, glm::vec3(-2.0f, 0.0f, 1.0f));
+	dirLightObj = new DirLightModel(Window::shaderPhongProgram, glm::vec3(1.0f));
 
-	glUseProgram(shaderPhongProgram);
-
-	bunny->m_material.SetUniform(shaderPhongProgram);
-	//selectedObject = skybox;
+	sceneProj3 = new Scene();
 }
 
 // Treat this as a destructor function. Delete dynamically allocated memory here.
@@ -83,7 +73,7 @@ void Window::clean_up()
 	delete(pointLightObj);
 
 	glDeleteProgram(shaderNormalProgram);
-	glDeleteProgram(shaderPhongProgram);
+	glDeleteProgram(Window::shaderPhongProgram);
 	glDeleteProgram(shaderVisualLightProgram);
 	glDeleteProgram(shaderSkyBoxProgram);
 }
@@ -154,7 +144,7 @@ void Window::resize_callback(GLFWwindow* window, int width, int height)
 
 void Window::idle_callback()
 {
-	//selectedObject->Update();
+	//sceneProj3->Update();
 }
 
 void Window::display_callback(GLFWwindow* window)
@@ -167,20 +157,21 @@ void Window::display_callback(GLFWwindow* window)
 
 	//Draw skybox
 	glUseProgram(shaderSkyBoxProgram);
-	skybox->Draw(shaderSkyBoxProgram);
+	skybox->Draw();
 
 	// Use coresponding shader when setting uniforms/drawing objects
 	glUseProgram(activeShader);
 	GLint viewPosLoc     = glGetUniformLocation(activeShader, "viewPos");
 	glUniform3f(viewPosLoc, camera.Position.x, camera.Position.y, camera.Position.z);
-	bunny->Draw( activeShader );
+
+	sceneProj3->Draw();
 
 	//Draw the lights
 	//activeObject->Draw( shaderVisualLightProgram );
 
-	dirLightObj->Draw( shaderVisualLightProgram );
+	dirLightObj->Draw(  );
 
-	pointLightObj->Draw( shaderVisualLightProgram );
+	pointLightObj->Draw(  );
 
 	//spotLightObj->Draw( shaderVisualLightProgram );
 

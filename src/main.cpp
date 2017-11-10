@@ -58,7 +58,7 @@ void setup_opengl_settings()
 void print_versions()
 {
 	// Get info of GPU and supported OpenGL version
-	printf("Renderer: %s\n", glGetString(GL_RENDERER));
+	printf("renderer: %s\n", glGetString(GL_RENDERER));
 	printf("OpenGL version supported %s\n", glGetString(GL_VERSION));
 
 	//If the shading language symbol is defined

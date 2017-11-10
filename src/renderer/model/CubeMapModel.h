@@ -23,7 +23,7 @@ private:
 public:
 	CubeMapModel(GLuint shader, const char* filepath);
 
-	void Draw(GLuint shader) override;
+	void Draw() override;
 	void Update() override;
 
 private:

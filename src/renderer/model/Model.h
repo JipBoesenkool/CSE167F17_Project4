@@ -32,11 +32,11 @@ private:
 //Functions
 public:
 	Model();
-	Model(const char* filepath);
+	Model(const char* filepath, GLuint shader);
 	~Model();
 
 	void SetupMesh();
-	virtual void Draw( GLuint shader );
+	virtual void Draw( );
 	virtual void Update();
 };
 

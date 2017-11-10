@@ -4,7 +4,7 @@
 #include "SpotLightModel.h"
 
 SpotLightModel::SpotLightModel(GLuint shader, glm::vec3 position)
-		: Model("../resources/models/cone.obj")
+		: Model("../resources/models/cone.obj", shader)
 {
 	m_shader = shader;
 	m_local.m_position = position;
@@ -27,13 +27,13 @@ SpotLightModel::SpotLightModel(GLuint shader, glm::vec3 position)
 	m_spotLight.SetUniform(shader);
 }
 
-void SpotLightModel::Draw( GLuint shader )
+void SpotLightModel::Draw( )
 {
-	glUseProgram(shader);
-	GLint colorLoc     = glGetUniformLocation(shader, "color");
+	glUseProgram(m_shader);
+	GLint colorLoc     = glGetUniformLocation(m_shader, "color");
 	glUniform3f(colorLoc, m_spotLight.m_specular.r, m_spotLight.m_specular.g, m_spotLight.m_specular.b);
 
-	Model::Draw(shader);
+	Model::Draw();
 }
 
 void SpotLightModel::Update()

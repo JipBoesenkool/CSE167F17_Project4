@@ -5,7 +5,7 @@
 #ifndef DIRLIGHTMODEL_H
 #define DIRLIGHTMODEL_H
 
-#include "Model.h"
+#include "../model/Model.h"
 #include "Light.h"
 
 class DirLightModel : public Model
@@ -17,7 +17,7 @@ public:
 public:
 	DirLightModel(GLuint shader, glm::vec3 position = glm::vec3(0));
 
-	void Draw(GLuint shader) override;
+	void Draw() override;
 	void Update() override;
 };
 

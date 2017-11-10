@@ -1,5 +1,5 @@
 #include "Model.h"
-#include "Window.h"
+#include "../../Window.h"
 
 
 Model::Model()
@@ -7,8 +7,9 @@ Model::Model()
 	//Empty constructor
 }
 
-Model::Model(const char *filepath)
+Model::Model(const char *filepath, GLuint shader)
 {
+	m_shader = shader;
 	m_mesh = Mesh::ParseObj(filepath);
 	SetupMesh();
 }
@@ -53,14 +54,14 @@ void Model::SetupMesh()
 	glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, 0 );
 }
 
-void Model::Draw( GLuint shader )
+void Model::Draw(  )
 {
 	// We need to calculate this because modern OpenGL does not keep track of any matrix other than the viewport (D)
 	// Consequently, we need to forward the projection, view, and model matrices to the shader programs
 	// Get the location of the uniform variables "projection" and "modelview"
-	GLint uProjection 	= glGetUniformLocation(shader, "projection");
-	GLint uModel 		= glGetUniformLocation(shader, "model");
-	GLint uView 		= glGetUniformLocation(shader, "view");
+	GLint uProjection 	= glGetUniformLocation(m_shader, "projection");
+	GLint uModel 		= glGetUniformLocation(m_shader, "model");
+	GLint uView 		= glGetUniformLocation(m_shader, "view");
 	//Get model matrix
 	glm::mat4 model = m_local.GetModelMatrix() * m_world.m_matrix;
 

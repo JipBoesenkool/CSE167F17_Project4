@@ -4,19 +4,23 @@
 #include <iostream>
 
 #include <GLFW/glfw3.h>
-#include "Camera.h"
-#include "Model.h"
-#include "CubeMapModel.h"
-#include "Light.h"
-#include "shader.h"
 
-#include "SpotLightModel.h"
-#include "PointLightModel.h"
-#include "DirLightModel.h"
+#include "sceneGraph/Scene.h"
+
+#include "renderer/Camera.h"
+#include "renderer/model/Model.h"
+#include "renderer/model/CubeMapModel.h"
+#include "renderer/lighting/Light.h"
+#include "renderer/shader.h"
+
+#include "renderer/lighting/SpotLightModel.h"
+#include "renderer/lighting/PointLightModel.h"
+#include "renderer/lighting/DirLightModel.h"
 
 class Window
 {
 public:
+	static GLint shaderPhongProgram;
 	static int width;
 	static int height;
 	static glm::mat4 P; // P for projection

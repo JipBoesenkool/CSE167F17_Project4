@@ -4,7 +4,7 @@
 #include "PointLightModel.h"
 
 PointLightModel::PointLightModel(GLuint shader, glm::vec3 position)
-		: Model("../resources/models/sphere.obj")
+		: Model("../resources/models/sphere.obj", shader)
 {
 	m_shader = shader;
 	m_local.m_position = position;
@@ -23,13 +23,13 @@ PointLightModel::PointLightModel(GLuint shader, glm::vec3 position)
 	m_pointLight.SetUniform(shader);
 }
 
-void PointLightModel::Draw( GLuint shader )
+void PointLightModel::Draw( )
 {
-	glUseProgram(shader);
-	GLint colorLoc     = glGetUniformLocation(shader, "color");
+	glUseProgram(m_shader);
+	GLint colorLoc     = glGetUniformLocation(m_shader, "color");
 	glUniform3f(colorLoc, m_pointLight.m_specular.r, m_pointLight.m_specular.g, m_pointLight.m_specular.b);
 
-	Model::Draw(shader);
+	Model::Draw();
 }
 
 void PointLightModel::Update()

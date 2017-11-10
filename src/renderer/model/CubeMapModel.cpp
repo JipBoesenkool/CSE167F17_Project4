@@ -1,7 +1,7 @@
 #include "CubeMapModel.h"
 
 CubeMapModel::CubeMapModel(GLuint shader, const char* filepath)
-		: Model("../resources/models/cube.obj")
+		: Model("../resources/models/cube.obj", shader)
 {
 	m_shader = shader;
 	m_local.m_position = glm::vec3(0.0f);
@@ -12,15 +12,15 @@ CubeMapModel::CubeMapModel(GLuint shader, const char* filepath)
 	LoadCubemap(filepath, m_faces);
 }
 
-void CubeMapModel::Draw( GLuint shader )
+void CubeMapModel::Draw( )
 {
 	glDepthMask(GL_FALSE);
-	glUseProgram(shader);
+	glUseProgram(m_shader);
 
 	glBindVertexArray(m_VAO);
 	glBindTexture(GL_TEXTURE_CUBE_MAP, m_textureID);
 
-	Model::Draw(shader);
+	Model::Draw();
 
 	glDepthMask(GL_TRUE);
 }

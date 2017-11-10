@@ -5,7 +5,7 @@
 #ifndef SPOTLIGHTMODEL_H
 #define SPOTLIGHTMODEL_H
 
-#include "Model.h"
+#include "../model/Model.h"
 #include "Light.h"
 
 #define GLM_ENABLE_EXPERIMENTAL
@@ -20,9 +20,8 @@ public:
 public:
 	SpotLightModel(GLuint shader, glm::vec3 position = glm::vec3(0));
 
-	void Draw(GLuint shader) override;
+	void Draw() override;
 	void Update() override;
 };
-
 
 #endif //SPOTLIGHTMODEL_H

@@ -16,7 +16,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
-#include "Shader.h"
+#include "../shader.h"
 
 struct Material {
     glm::vec3 m_ambient;

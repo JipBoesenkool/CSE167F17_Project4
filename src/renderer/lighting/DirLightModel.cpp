@@ -17,7 +17,7 @@ DirLightModel::DirLightModel(GLuint shader, glm::vec3 position)
 	m_dirLight.SetUniform(shader);
 }
 
-void DirLightModel::Draw( GLuint shader )
+void DirLightModel::Draw( )
 {
 	//Empty, nothing to draw
 }

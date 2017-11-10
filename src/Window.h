@@ -21,6 +21,8 @@
 class Window
 {
 public:
+	static GLint shaderNormalProgram;
+	static GLint shaderVisualLightProgram;
 	static GLint shaderPhongProgram;
 	static int width;
 	static int height;

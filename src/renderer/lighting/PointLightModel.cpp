@@ -2,10 +2,12 @@
 // Created by Jip Boesenkool on 26/10/2017.
 //
 #include "PointLightModel.h"
+#include "../../Window.h"
 
-PointLightModel::PointLightModel(GLuint shader, Transform *transform)
+PointLightModel::PointLightModel(GLuint phongShader, GLuint shader, Transform *transform)
 		: Model("../resources/models/sphere.obj", shader, transform)
 {
+	m_phongShader = phongShader;
 	m_shader = shader;
 	m_transform = transform;
 	m_transform->Scale(0.25f);
@@ -19,8 +21,8 @@ PointLightModel::PointLightModel(GLuint shader, Transform *transform)
 	m_pointLight.m_quadratic   = 0.032f;
 
 	//Set up phong shader
-	glUseProgram(shader);
-	m_pointLight.SetUniform(shader);
+	glUseProgram(m_phongShader);
+	m_pointLight.SetUniform(m_phongShader);
 }
 
 void PointLightModel::Draw( glm::mat4 m )
@@ -38,6 +40,6 @@ void PointLightModel::Update()
 	m_pointLight.m_position = m_transform->m_position;
 
 	//update phong shader
-	glUseProgram(m_shader);
-	m_pointLight.SetUniform(m_shader);
+	glUseProgram(m_phongShader);
+	m_pointLight.SetUniform(m_phongShader);
 }

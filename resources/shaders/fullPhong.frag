@@ -55,7 +55,7 @@ out vec4 color;
 uniform vec3 viewPos;
 uniform Material material;
 uniform DirLight dirLight;
-//uniform PointLight pointLight;
+uniform PointLight pointLight;
 //uniform SpotLight spotLight;
 
 void main()
@@ -69,7 +69,7 @@ void main()
     result += CalcDirLight(dirLight, norm, viewDir);
 
     // Phase 2: Point lights
-    // result += CalcPointLight(pointLight, norm, FragPos, viewDir);
+    result += CalcPointLight(pointLight, norm, FragPos, viewDir);
 
     // Phase 3: Spot light
    //  result += CalcSpotLight(spotLight, norm, FragPos, viewDir);

@@ -5,10 +5,7 @@ Model* skybox;
 
 Scene *sceneProj3;
 
-//GLint shaderProgram;
 GLint shaderProgram;
-GLint shaderNormalProgram;
-GLint shaderVisualLightProgram;
 GLint shaderSkyBoxProgram;
 GLint activeShader;
 
@@ -35,14 +32,16 @@ int Window::height;
 glm::mat4 Window::P;
 glm::mat4 Window::V;
 
+GLint Window::shaderNormalProgram;
 GLint Window::shaderPhongProgram;
+GLint Window::shaderVisualLightProgram;
 
 void Window::initialize_objects()
 {
 	// Load the shader program. Make sure you have the correct filepath up top
-	shaderNormalProgram = LoadShaders("../resources/shaders/shaderNormal.vert", "../resources/shaders/shaderNormal.frag");
+	Window::shaderNormalProgram = LoadShaders("../resources/shaders/shaderNormal.vert", "../resources/shaders/shaderNormal.frag");
 	Window::shaderPhongProgram = LoadShaders("../resources/shaders/fullPhong.vert", "../resources/shaders/fullPhong.frag");
-	shaderVisualLightProgram = LoadShaders("../resources/shaders/lamp.vert", "../resources/shaders/lamp.frag");
+	Window::shaderVisualLightProgram = LoadShaders("../resources/shaders/lamp.vert", "../resources/shaders/lamp.frag");
 	shaderSkyBoxProgram = LoadShaders("../resources/shaders/skyBox.vert", "../resources/shaders/skyBox.frag");
 	activeShader = Window::shaderPhongProgram;
 
@@ -68,9 +67,9 @@ void Window::clean_up()
 
 	delete(dirLightObj);
 
-	glDeleteProgram(shaderNormalProgram);
+	glDeleteProgram(Window::shaderNormalProgram);
 	glDeleteProgram(Window::shaderPhongProgram);
-	glDeleteProgram(shaderVisualLightProgram);
+	glDeleteProgram(Window::shaderVisualLightProgram);
 	glDeleteProgram(shaderSkyBoxProgram);
 }
 
@@ -151,8 +150,34 @@ void Window::display_callback(GLFWwindow* window)
 	P = glm::perspective(camera.Zoom, (float)width / (float)height, 0.1f, 1000.0f);
 	V = camera.GetViewMatrix();
 
-	//Draw skybox
+	//TODO: set globally for all shaders
+	//Update view, projection matrices
+	glUseProgram(Window::shaderPhongProgram);
+	GLint uProjection 	= glGetUniformLocation(Window::shaderPhongProgram, "projection");
+	GLint uView 		= glGetUniformLocation(Window::shaderPhongProgram, "view");
+	glUniformMatrix4fv(uProjection, 1, GL_FALSE, &Window::P[0][0]);
+	glUniformMatrix4fv(uView, 1, GL_FALSE, &Window::V[0][0]);
+
+	// Now send these values to the shader program
+	glUseProgram(Window::shaderVisualLightProgram);
+	uProjection 	= glGetUniformLocation(Window::shaderVisualLightProgram, "projection");
+	uView 		= glGetUniformLocation(Window::shaderVisualLightProgram, "view");
+	glUniformMatrix4fv(uProjection, 1, GL_FALSE, &Window::P[0][0]);
+	glUniformMatrix4fv(uView, 1, GL_FALSE, &Window::V[0][0]);
+
+	glUseProgram(Window::shaderNormalProgram);
+	uProjection 	= glGetUniformLocation(Window::shaderNormalProgram, "projection");
+	uView 		= glGetUniformLocation(Window::shaderNormalProgram, "view");
+	glUniformMatrix4fv(uProjection, 1, GL_FALSE, &Window::P[0][0]);
+	glUniformMatrix4fv(uView, 1, GL_FALSE, &Window::V[0][0]);
+
 	glUseProgram(shaderSkyBoxProgram);
+	uProjection 	= glGetUniformLocation(shaderSkyBoxProgram, "projection");
+	uView 		= glGetUniformLocation(shaderSkyBoxProgram, "view");
+	glUniformMatrix4fv(uProjection, 1, GL_FALSE, &Window::P[0][0]);
+	glUniformMatrix4fv(uView, 1, GL_FALSE, &Window::V[0][0]);
+
+	//Draw skybox
 	skybox->Draw( glm::mat4(1.0f) );
 
 	// Use coresponding shader when setting uniforms/drawing objects
@@ -163,12 +188,7 @@ void Window::display_callback(GLFWwindow* window)
 	sceneProj3->Draw();
 
 	//Draw the lights
-	//activeObject->Draw( shaderVisualLightProgram );
-
 	dirLightObj->Draw( glm::mat4(1.0f) );
-
-	//spotLightObj->Draw( shaderVisualLightProgram );
-
 
 	// Gets events, including input such as keyboard and mouse or window resizing
 	glfwPollEvents();
@@ -206,13 +226,13 @@ void Window::key_callback(GLFWwindow* window, int key, int scancode, int action,
 		}
 		if (key == GLFW_KEY_N)
 		{
-			if(activeShader == shaderNormalProgram)
+			if(activeShader == Window::shaderNormalProgram)
 			{
 				activeShader = shaderPhongProgram;
 			}
 			else
 			{
-				activeShader = shaderNormalProgram;
+				activeShader = Window::shaderNormalProgram;
 			}
 		}
 		// Check if escape was pressed

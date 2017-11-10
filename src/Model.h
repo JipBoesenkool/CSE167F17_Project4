@@ -21,11 +21,14 @@ public:
 	Material m_material;
 	Transform m_world;
 	Transform m_local;
+	GLint m_shader;
 
-private:
 	// These variables are needed for the shader program
 	//Opengl
 	GLuint m_VBO, m_VAO, m_EBO;
+
+private:
+
 //Functions
 public:
 	Model();

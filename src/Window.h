@@ -4,8 +4,9 @@
 #include <iostream>
 
 #include <GLFW/glfw3.h>
-#include "Cube.h"
+#include "Camera.h"
 #include "Model.h"
+#include "CubeMapModel.h"
 #include "Light.h"
 #include "shader.h"
 

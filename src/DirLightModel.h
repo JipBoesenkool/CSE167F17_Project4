@@ -13,7 +13,6 @@ class DirLightModel : public Model
 //Members
 public:
 	DirLight m_dirLight;
-	GLint m_shader;
 //Functions
 public:
 	DirLightModel(GLuint shader, glm::vec3 position = glm::vec3(0));

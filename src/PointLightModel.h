@@ -13,7 +13,6 @@ class PointLightModel : public Model
 //Members
 public:
 	PointLight m_pointLight;
-	GLint m_shader;
 //Functions
 public:
 	PointLightModel(GLuint shader, glm::vec3 position = glm::vec3(0));

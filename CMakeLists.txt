@@ -2,7 +2,8 @@ cmake_minimum_required(VERSION 3.2)
 
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(EXECUTABLE_NAME "CSE167_Project2")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -stdlib=libc++")
+set(EXECUTABLE_NAME "CSE167_Project3")
 
 project(${EXECUTABLE_NAME})
 ################################################################################
@@ -25,6 +26,10 @@ set(GLM_SOURCE_DIR "${PROJECT_SOURCE_DIR}/lib/GLM")
 include_directories(${GLM_SOURCE_DIR})
 add_subdirectory(${GLM_SOURCE_DIR})
 
+#SFML
+set(SFML_SOURCE_DIR "${PROJECT_SOURCE_DIR}/lib/SFML")
+add_subdirectory(${SFML_SOURCE_DIR})
+
 ################################################################################
 # Project settings
 ################################################################################
@@ -36,6 +41,7 @@ file(GLOB_RECURSE SOURCE_FILES
 set(LINKED_LIBRARIES
         ${OPENGL_gl_LIBRARY}
         glfw
+        sfml-graphics
         )
 
 #resources
@@ -44,3 +50,6 @@ file(COPY resources DESTINATION ${CMAKE_BINARY_DIR})
 #build executable and then link to the libraries
 add_executable(${EXECUTABLE_NAME} ${SOURCE_FILES})
 target_link_libraries(${EXECUTABLE_NAME} ${LINKED_LIBRARIES})
+target_include_directories(${EXECUTABLE_NAME} PRIVATE
+        "${PROJECT_SOURCE_DIR}/lib/SFML/include"
+        "${PROJECT_SOURCE_DIR}/lib")

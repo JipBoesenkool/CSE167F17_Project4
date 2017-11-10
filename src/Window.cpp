@@ -1,29 +1,23 @@
 #include "window.h"
 
-const char* window_title = "GLFW Starter Project";
-Cube * cube;
+const char* window_title = "Project 3";
+Model* skybox;
 Model *bunny;
-Model *dragon;
-Model *bear;
-Model* activeObject;
-Model* selectedObject;
 
 //GLint shaderProgram;
+GLint shaderProgram;
 GLint shaderNormalProgram;
 GLint shaderPhongProgram;
 GLint shaderVisualLightProgram;
+GLint shaderSkyBoxProgram;
 GLint activeShader;
 
 //Lights
-PointLightModel *pointLightObj;
-SpotLightModel *spotLightObj;
 DirLightModel *dirLightObj;
-int selectedLight = 0;
+PointLightModel *pointLightObj;
 
 // Default camera parameters
-glm::vec3 cam_pos(0.0f, 0.0f, 20.0f);		// e  | Position of camera
-glm::vec3 cam_look_at(0.0f, 0.0f, 0.0f);	// d  | This is where the camera looks at
-glm::vec3 cam_up(0.0f, 1.0f, 0.0f);			// up | What orientation "up" is
+Camera camera( glm::vec3(0.0f, 0.0f, 20.0f) );
 
 enum class ModelState
 {
@@ -45,10 +39,10 @@ glm::mat4 Window::V;
 void Window::initialize_objects()
 {
 	// Load the shader program. Make sure you have the correct filepath up top
-	//shaderProgram = LoadShaders("../resources/shaders/shader.vert", "../resources/shaders/shader.frag");
 	shaderNormalProgram = LoadShaders("../resources/shaders/shaderNormal.vert", "../resources/shaders/shaderNormal.frag");
-	shaderPhongProgram = LoadShaders("../resources/shaders/phong.vert", "../resources/shaders/phong.frag");
+	shaderPhongProgram = LoadShaders("../resources/shaders/fullPhong.vert", "../resources/shaders/fullPhong.frag");
 	shaderVisualLightProgram = LoadShaders("../resources/shaders/lamp.vert", "../resources/shaders/lamp.frag");
+	shaderSkyBoxProgram = LoadShaders("../resources/shaders/skyBox.vert", "../resources/shaders/skyBox.frag");
 	activeShader = shaderPhongProgram;
 
 	bunny = new Model("../resources/models/bunny.obj");
@@ -60,41 +54,38 @@ void Window::initialize_objects()
 			76.8f
 	};
 
+	//Skybox
+	skybox = new CubeMapModel(shaderSkyBoxProgram, "../resources/textures/skybox");
 
 	//Set up static camera
 	glUseProgram(shaderPhongProgram);
 	GLint viewPosLoc     = glGetUniformLocation(shaderPhongProgram, "viewPos");
-	glUniform3f(viewPosLoc, cam_pos.x, cam_pos.y, cam_pos.z);
-	GLint selLightLoc     = glGetUniformLocation(shaderPhongProgram, "selectedLight");
-	glUniform1f(selLightLoc, 0.0f);
+	glUniform3f(viewPosLoc, camera.Position.x, camera.Position.y, camera.Position.z);
 
 	//Light objects
 	//Point light
 	pointLightObj = new PointLightModel(shaderPhongProgram, glm::vec3(-2.0f, 0.0f, 1.0f));
-	spotLightObj = new SpotLightModel(shaderPhongProgram, glm::vec3(0.0f, 2.0f, 0.0f));
 	dirLightObj = new DirLightModel(shaderPhongProgram, glm::vec3(1.0f));
 
 	glUseProgram(shaderPhongProgram);
-	bunny->m_material.SetUniform(shaderPhongProgram);
 
-	activeObject = bunny;
-	selectedObject = bunny;
+	bunny->m_material.SetUniform(shaderPhongProgram);
+	//selectedObject = skybox;
 }
 
 // Treat this as a destructor function. Delete dynamically allocated memory here.
 void Window::clean_up()
 {
-	delete(bunny);
-	delete(dragon);
-	delete(bear);
+	delete(skybox);
 
 	delete(dirLightObj);
-	delete(spotLightObj);
+
 	delete(pointLightObj);
 
 	glDeleteProgram(shaderNormalProgram);
 	glDeleteProgram(shaderPhongProgram);
 	glDeleteProgram(shaderVisualLightProgram);
+	glDeleteProgram(shaderSkyBoxProgram);
 }
 
 GLFWwindow* Window::create_window(int width, int height)
@@ -156,14 +147,14 @@ void Window::resize_callback(GLFWwindow* window, int width, int height)
 
 	if (height > 0)
 	{
-		P = glm::perspective(45.0f, (float)width / (float)height, 0.1f, 1000.0f);
-		V = glm::lookAt(cam_pos, cam_look_at, cam_up);
+		P = glm::perspective(camera.Zoom, (float)width / (float)height, 0.1f, 1000.0f);
+		V = camera.GetViewMatrix();
 	}
 }
 
 void Window::idle_callback()
 {
-	selectedObject->Update();
+	//selectedObject->Update();
 }
 
 void Window::display_callback(GLFWwindow* window)
@@ -171,28 +162,28 @@ void Window::display_callback(GLFWwindow* window)
 	// Clear the color and depth buffers
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+	P = glm::perspective(camera.Zoom, (float)width / (float)height, 0.1f, 1000.0f);
+	V = camera.GetViewMatrix();
+
+	//Draw skybox
+	glUseProgram(shaderSkyBoxProgram);
+	skybox->Draw(shaderSkyBoxProgram);
+
 	// Use coresponding shader when setting uniforms/drawing objects
 	glUseProgram(activeShader);
-
-	// Use coresponding shader when setting uniforms/drawing objects
 	GLint viewPosLoc     = glGetUniformLocation(activeShader, "viewPos");
-	glUniform3f(viewPosLoc, cam_pos.x, cam_pos.y, cam_pos.z);
-	activeObject->Draw( activeShader );
+	glUniform3f(viewPosLoc, camera.Position.x, camera.Position.y, camera.Position.z);
+	bunny->Draw( activeShader );
 
 	//Draw the lights
-	activeObject->Draw( shaderVisualLightProgram );
-	if(selectedLight == 1 || selectedLight == 0)
-	{
-		dirLightObj->Draw( shaderVisualLightProgram );
-	}
-	if(selectedLight == 2 || selectedLight == 0)
-	{
-		pointLightObj->Draw( shaderVisualLightProgram );
-	}
-	if(selectedLight == 3 || selectedLight == 0)
-	{
-		spotLightObj->Draw( shaderVisualLightProgram );
-	}
+	//activeObject->Draw( shaderVisualLightProgram );
+
+	dirLightObj->Draw( shaderVisualLightProgram );
+
+	pointLightObj->Draw( shaderVisualLightProgram );
+
+	//spotLightObj->Draw( shaderVisualLightProgram );
+
 
 	// Gets events, including input such as keyboard and mouse or window resizing
 	glfwPollEvents();
@@ -245,182 +236,26 @@ void Window::key_callback(GLFWwindow* window, int key, int scancode, int action,
 			// Close the window. This causes the program to also terminate.
 			glfwSetWindowShouldClose(window, GL_TRUE);
 		}
-		if (key == GLFW_KEY_F1)
-		{
-			activeObject = bunny;
-			bunny->m_material.SetUniform(shaderPhongProgram);
-		}
-		if (key == GLFW_KEY_F2)
-		{
-			if(dragon == nullptr)
-			{
-				dragon = new Model("../resources/models/dragon.obj");
-				//Another model should only use diffuse reflection, with zero shininess.
-				//Modified red rubber
-				dragon->m_material = Material{
-						glm::vec3(0.0f, 0.0f, 0.0f),
-						glm::vec3(0.5f, 0.4f, 0.4f),
-						glm::vec3(0.0f, 0.0f, 0.0f),
-						0.0f
-				};
-			}
-			activeObject = dragon;
-			dragon->m_material.SetUniform(shaderPhongProgram);
-		}
-		if (key == GLFW_KEY_F3)
-		{
-			if(bear == nullptr)
-			{
-				bear = new Model("../resources/models/bear.obj");
-				//One of the models should be very shiny, with no diffuse reflection.
-				//Modified emerald
-				bear->m_material = Material{
-						glm::vec3(0.0215f, 0.1745f, 0.0215), 	//amb
-						glm::vec3(0.0f),				//dif
-						glm::vec3(0.633f, 0.727811f, 0.633f),	//spec
-						76.8f
-				};
-			}
-			activeObject = bear;
-			bear->m_material.SetUniform(shaderPhongProgram);
-		}
-		//Reset transform
-		if (key == GLFW_KEY_R)
-		{
-			if(mods == GLFW_MOD_SHIFT)
-			{
-				selectedObject->m_world.ResetRotation();
-				selectedObject->m_world.ResetScale();
-
-				selectedObject->m_local.ResetRotation();
-				selectedObject->m_local.ResetScale();
-			}
-			else
-			{
-				selectedObject->m_world.ResetPosition();
-				selectedObject->m_local.ResetPosition();
-			}
-		}
-		//Toggle selectable object
-		if (key == GLFW_KEY_1)
-		{
-			selectedObject = dirLightObj;
-			selectedLight = 1;
-			GLint selLightLoc     = glGetUniformLocation(shaderPhongProgram, "selectedLight");
-			glUniform1f(selLightLoc, 1.0f);
-		}
-		if (key == GLFW_KEY_2)
-		{
-			selectedObject = pointLightObj;
-			selectedLight = 2;
-			GLint selLightLoc     = glGetUniformLocation(shaderPhongProgram, "selectedLight");
-			glUniform1f(selLightLoc, 2.0f);
-		}
-		if (key == GLFW_KEY_3)
-		{
-			selectedObject = spotLightObj;
-			selectedLight = 3;
-			GLint selLightLoc     = glGetUniformLocation(shaderPhongProgram, "selectedLight");
-			glUniform1f(selLightLoc, 3.0f);
-		}
-		if (key == GLFW_KEY_0)
-		{
-			selectedObject = activeObject;
-		}
-		if (key == GLFW_KEY_9)
-		{
-			selectedLight = 0;
-			GLint selLightLoc     = glGetUniformLocation(shaderPhongProgram, "selectedLight");
-			glUniform1f(selLightLoc, 0.0f);
-		}
 	}
 
 	if (action == GLFW_PRESS || action == GLFW_REPEAT)
 	{
 		//Translation
-		if (key == GLFW_KEY_X)
+		if (key == GLFW_KEY_UP)
 		{
-			if(modelState == ModelState::Transform)
-			{
-				glm::vec3 dir;
-				(mods == 2) ? dir = glm::vec3(1,0,0) : dir = glm::vec3(-1,0,0);
-				selectedObject->m_local.Move(dir);
-			}
-			else if(modelState == ModelState::Rotation)
-			{
-				glm::vec3 rot;
-				(mods == 4) ? rot = glm::vec3(-10.0f,0,0) : rot = glm::vec3(10.0f,0,0);
-				selectedObject->m_local.Rotate( rot );
-			}
+			camera.ProcessKeyboard( Camera_Movement::FORWARD, 0.1f );
 		}
-		if (key == GLFW_KEY_Y)
+		if (key == GLFW_KEY_DOWN)
 		{
-			if(modelState == ModelState::Transform)
-			{
-				glm::vec3 dir;
-				(mods == 2) ? dir = glm::vec3(0,1,0) : dir = glm::vec3(0,-1,0);
-				selectedObject->m_local.Move(dir);
-			}
-			else if(modelState == ModelState::Rotation)
-			{
-				glm::vec3 rot;
-				(mods == 4) ? rot = glm::vec3(0,-1.0f,0) : rot = glm::vec3(0,1.0f,0);
-				selectedObject->m_local.Rotate( rot );
-			}
-
+			camera.ProcessKeyboard( Camera_Movement::BACKWARD, 0.1f );
 		}
-		if (key == GLFW_KEY_Z)
+		if (key == GLFW_KEY_LEFT)
 		{
-			if(modelState == ModelState::Transform)
-			{
-				glm::vec3 dir;
-				(mods == 2) ? dir = glm::vec3(0,0,1) : dir = glm::vec3(0,0,-1);
-				selectedObject->m_local.Move(dir);
-			}
-			else if(modelState == ModelState::Rotation)
-			{
-				glm::vec3 rot;
-				(mods == 4) ? rot =glm::vec3(0,0,10.0f): rot=glm::vec3(0,0,-10.0f);
-				selectedObject->m_local.Rotate( rot );
-			}
+			camera.ProcessKeyboard( Camera_Movement::LEFT, 0.1f );
 		}
-		//Rotation
-		if (key == GLFW_KEY_O)
+		if (key == GLFW_KEY_RIGHT)
 		{
-			glm::vec3 rot;
-			(mods == 4) ? rot =glm::vec3(0,0,10.0f): rot=glm::vec3(0,0,-10.0f);
-			selectedObject->m_world.Rotate( rot );
-		}
-		//Scale
-		if (key == GLFW_KEY_S)
-		{
-			float scale = 2;
-			(mods == GLFW_MOD_SHIFT) ? scale = 2 : scale = 0.5f;
-			selectedObject->m_local.Scale(scale);
-		}
-		//Spotlight
-		if (key == GLFW_KEY_W)
-		{
-			float cutoff;
-			(mods == GLFW_MOD_SHIFT) ? cutoff = 1.0f : cutoff = -1.0f;
-			if(selectedObject == spotLightObj)
-			{
-				spotLightObj->m_spotLight.m_cutoff += cutoff;
-				spotLightObj->m_spotLight.m_outercutoff += cutoff;
-			}
-		}
-		if (key == GLFW_KEY_E)
-		{
-			float cutoff;
-			(mods == GLFW_MOD_SHIFT) ? cutoff = 1.0f : cutoff = -1.0f;
-			if(selectedObject == spotLightObj)
-			{
-				spotLightObj->m_spotLight.m_outercutoff += cutoff;
-				if(spotLightObj->m_spotLight.m_outercutoff < spotLightObj->m_spotLight.m_cutoff)
-				{
-					spotLightObj->m_spotLight.m_outercutoff = spotLightObj->m_spotLight.m_cutoff;
-				}
-			}
+			camera.ProcessKeyboard( Camera_Movement::RIGHT, 0.1f );
 		}
 	}
 }
@@ -452,10 +287,10 @@ void Window::mouse_callback(GLFWwindow* window, double xpos, double ypos)
 			{
 				// Rotate about the axis that is perpendicular to the great circle connecting the mouse movements.
 				glm::vec3 rotAxis = glm::cross( lastPoint, curPoint );
-				float sensitivity = 1.0f;
+				float sensitivity = 5.0f;
 				float rotAngle = velocity * sensitivity;
-				//activeObject->m_world.Rotate(rotAngle * rotAxis);
-				selectedObject->m_world.m_matrix = selectedObject->m_world.m_matrix * glm::rotate(glm::mat4(1.0f), rotAngle / 180.0f * glm::pi<float>(), rotAxis);
+
+				camera.ProcessMouseMovement(rotAngle * rotAxis);
 			}
 		}
 		break;
@@ -465,10 +300,10 @@ void Window::mouse_callback(GLFWwindow* window, double xpos, double ypos)
 			float yoffset = lastMousePos.y - ypos;
 
 			float sensitivity = 0.05;
-			xoffset *= sensitivity;
-			yoffset *= sensitivity;
+			//xoffset *= sensitivity;
+			//yoffset *= sensitivity;
 
-			selectedObject->m_local.Move( glm::vec3(xoffset, yoffset, 0) );
+			camera.ProcessMouseMovement( xoffset, yoffset, false);
 		};
 		break;
 	}
@@ -479,12 +314,11 @@ void Window::mouse_callback(GLFWwindow* window, double xpos, double ypos)
 
 void Window::scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 {
-	if(modelState == ModelState::Transform)
-	{
-		float sensitivity = 0.05;
-		yoffset *= sensitivity;
-		selectedObject->m_local.Move( glm::vec3(0, 0, -yoffset) );
-	}
+	float sensitivity = 0.05;
+	yoffset *= sensitivity;
+
+	camera.ProcessMouseScroll(yoffset);
+	P = glm::perspective(camera.Zoom, (float)width / (float)height, 0.1f, 1000.0f);
 }
 
 glm::vec3 Window::trackBallMapping(double xpos, double ypos)

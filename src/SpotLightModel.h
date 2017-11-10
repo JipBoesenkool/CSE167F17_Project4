@@ -16,7 +16,6 @@ class SpotLightModel : public Model
 //Members
 public:
 	SpotLight m_spotLight;
-	GLint m_shader;
 //Functions
 public:
 	SpotLightModel(GLuint shader, glm::vec3 position = glm::vec3(0));

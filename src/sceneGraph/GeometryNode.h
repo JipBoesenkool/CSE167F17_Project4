@@ -20,20 +20,19 @@ public:
 		m_model = model;
 	};
 
-	GeometryNode( const char* filepath, unsigned int shader )
+	GeometryNode( const char* filepath, unsigned int shader, Transform *transform )
 	{
-		m_model = new Model(filepath, shader);
+		m_model = new Model(filepath, shader, transform);
 	};
 
-	void Init(const char* filepath, unsigned int shader)
+	void Init(const char* filepath, unsigned int shader, Transform *transform)
 	{
-		m_model = new Model(filepath, shader);
+		m_model = new Model(filepath, shader, transform);
 	}
 
 	void Draw(glm::mat4 C) override
 	{
-		m_model->m_local.m_matrix = C * m_model->m_local.GetModelMatrix();
-		m_model->Draw();
+		m_model->Draw(C);
 	};
 
 	void Update() override

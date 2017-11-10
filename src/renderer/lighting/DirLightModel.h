@@ -15,9 +15,9 @@ public:
 	DirLight m_dirLight;
 //Functions
 public:
-	DirLightModel(GLuint shader, glm::vec3 position = glm::vec3(0));
+	DirLightModel(GLuint shader, Transform *transform);
 
-	void Draw() override;
+	void Draw( glm::mat4 m ) override;
 	void Update() override;
 };
 

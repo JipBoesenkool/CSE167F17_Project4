@@ -21,9 +21,9 @@ private:
 	};
 //Functions
 public:
-	CubeMapModel(GLuint shader, const char* filepath);
+	CubeMapModel(GLuint shader, const char* filepath, Transform *transform);
 
-	void Draw() override;
+	void Draw( glm::mat4 m ) override;
 	void Update() override;
 
 private:

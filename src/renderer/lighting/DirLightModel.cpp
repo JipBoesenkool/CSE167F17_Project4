@@ -3,11 +3,11 @@
 //
 #include "DirLightModel.h"
 
-DirLightModel::DirLightModel(GLuint shader, glm::vec3 position)
+DirLightModel::DirLightModel(GLuint shader, Transform *transform)
 {
 	m_shader = shader;
-	m_local.m_position = position;
-	m_dirLight.m_direction = glm::normalize( glm::vec3(0.0f) - m_local.m_position );
+	m_transform = transform;
+	m_dirLight.m_direction = glm::normalize( glm::vec3(0.0f) - m_transform->m_position );
 	m_dirLight.m_ambient = glm::vec3(0.2f);
 	m_dirLight.m_diffuse = glm::vec3(0.5f);
 	m_dirLight.m_specular = glm::vec3(1.0f);
@@ -17,7 +17,7 @@ DirLightModel::DirLightModel(GLuint shader, glm::vec3 position)
 	m_dirLight.SetUniform(shader);
 }
 
-void DirLightModel::Draw( )
+void DirLightModel::Draw( glm::mat4 m )
 {
 	//Empty, nothing to draw
 }
@@ -25,7 +25,7 @@ void DirLightModel::Draw( )
 void DirLightModel::Update()
 {
 	//Update lights etc
-	m_dirLight.m_direction = glm::normalize( glm::vec3(0.0f) - m_local.m_position );
+	m_dirLight.m_direction = glm::normalize( glm::vec3(0.0f) - m_transform->m_position );
 
 	//update phong shader
 	glUseProgram(m_shader);

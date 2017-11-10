@@ -1,18 +1,17 @@
 #include "CubeMapModel.h"
 
-CubeMapModel::CubeMapModel(GLuint shader, const char* filepath)
-		: Model("../resources/models/cube.obj", shader)
+CubeMapModel::CubeMapModel(GLuint shader, const char* filepath, Transform *transform)
+		: Model("../resources/models/cube.obj", shader, transform)
 {
 	m_shader = shader;
-	m_local.m_position = glm::vec3(0.0f);
-	m_local.Scale(500.0f);
+	m_transform->Scale(500.0f);
 
 	//Set up skybox shader
 	glUseProgram(shader);
 	LoadCubemap(filepath, m_faces);
 }
 
-void CubeMapModel::Draw( )
+void CubeMapModel::Draw( glm::mat4 m )
 {
 	glDepthMask(GL_FALSE);
 	glUseProgram(m_shader);
@@ -20,7 +19,7 @@ void CubeMapModel::Draw( )
 	glBindVertexArray(m_VAO);
 	glBindTexture(GL_TEXTURE_CUBE_MAP, m_textureID);
 
-	Model::Draw();
+	Model::Draw(m);
 
 	glDepthMask(GL_TRUE);
 }

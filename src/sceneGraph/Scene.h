@@ -11,6 +11,7 @@
 #include "GeometryNode.h"
 
 #include "../renderer/model/Model.h"
+#include "../renderer/lighting/PointLightModel.h"
 
 class Scene
 {
@@ -18,6 +19,11 @@ class Scene
 private:
 	//Main node
 	TransformNode world;
+	TransformNode *robot2world;
+	TransformNode *bunny2robot;
+	TransformNode *light2world;
+
+	PointLightModel *pointLightObj;
 //Functions
 public:
 	Scene();

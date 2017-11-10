@@ -16,11 +16,13 @@ class Transform
 {
 //Members
 private:
-	bool updateMatrix = true;
+	bool m_updateMatrix = true;
 public:
+	bool m_localOrientation = true;
 	glm::vec3 m_position;
 	glm::vec3 m_rotation;
 	glm::vec3 m_scale;
+
 //Getters & Setters
 public:
 	glm::mat4 m_matrix = glm::mat4(1.0f);
@@ -30,7 +32,11 @@ public:
 	glm::mat4 GetScaleMatrix();
 //Functions
 public:
-	Transform(glm::vec3 position = glm::vec3(0.0f), glm::vec3 rotation = glm::vec3(0.0f), glm::vec3 scale = glm::vec3(1.0f));
+	Transform(
+			bool localOrientation = true,
+			glm::vec3 position = glm::vec3(0.0f),
+			glm::vec3 rotation = glm::vec3(0.0f),
+			glm::vec3 scale = glm::vec3(1.0f));
 
 	//Manipulation
 	void Move(glm::vec3 direction);

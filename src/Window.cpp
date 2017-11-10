@@ -14,7 +14,6 @@ GLint activeShader;
 
 //Lights
 DirLightModel *dirLightObj;
-PointLightModel *pointLightObj;
 
 // Default camera parameters
 Camera camera( glm::vec3(0.0f, 0.0f, 20.0f) );
@@ -48,7 +47,7 @@ void Window::initialize_objects()
 	activeShader = Window::shaderPhongProgram;
 
 	//Skybox
-	skybox = new CubeMapModel(shaderSkyBoxProgram, "../resources/textures/skybox");
+	skybox = new CubeMapModel(shaderSkyBoxProgram, "../resources/textures/skybox", new Transform() );
 
 	//Set up static camera
 	glUseProgram(Window::shaderPhongProgram);
@@ -57,8 +56,7 @@ void Window::initialize_objects()
 
 	//Light objects
 	//Point light
-	pointLightObj = new PointLightModel(Window::shaderPhongProgram, glm::vec3(-2.0f, 0.0f, 1.0f));
-	dirLightObj = new DirLightModel(Window::shaderPhongProgram, glm::vec3(1.0f));
+	dirLightObj = new DirLightModel(Window::shaderPhongProgram, new Transform(true, glm::vec3(1.0f)));
 
 	sceneProj3 = new Scene();
 }
@@ -69,8 +67,6 @@ void Window::clean_up()
 	delete(skybox);
 
 	delete(dirLightObj);
-
-	delete(pointLightObj);
 
 	glDeleteProgram(shaderNormalProgram);
 	glDeleteProgram(Window::shaderPhongProgram);
@@ -144,7 +140,7 @@ void Window::resize_callback(GLFWwindow* window, int width, int height)
 
 void Window::idle_callback()
 {
-	//sceneProj3->Update();
+	sceneProj3->Update();
 }
 
 void Window::display_callback(GLFWwindow* window)
@@ -157,7 +153,7 @@ void Window::display_callback(GLFWwindow* window)
 
 	//Draw skybox
 	glUseProgram(shaderSkyBoxProgram);
-	skybox->Draw();
+	skybox->Draw( glm::mat4(1.0f) );
 
 	// Use coresponding shader when setting uniforms/drawing objects
 	glUseProgram(activeShader);
@@ -169,9 +165,7 @@ void Window::display_callback(GLFWwindow* window)
 	//Draw the lights
 	//activeObject->Draw( shaderVisualLightProgram );
 
-	dirLightObj->Draw(  );
-
-	pointLightObj->Draw(  );
+	dirLightObj->Draw( glm::mat4(1.0f) );
 
 	//spotLightObj->Draw( shaderVisualLightProgram );
 

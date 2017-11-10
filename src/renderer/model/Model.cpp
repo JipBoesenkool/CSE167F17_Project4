@@ -7,9 +7,10 @@ Model::Model()
 	//Empty constructor
 }
 
-Model::Model(const char *filepath, GLuint shader)
+Model::Model(const char *filepath, GLuint shader, Transform *transform)
 {
 	m_shader = shader;
+	m_transform = transform;
 	m_mesh = Mesh::ParseObj(filepath);
 	SetupMesh();
 }
@@ -54,7 +55,7 @@ void Model::SetupMesh()
 	glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, 0 );
 }
 
-void Model::Draw(  )
+void Model::Draw( glm::mat4 m )
 {
 	// We need to calculate this because modern OpenGL does not keep track of any matrix other than the viewport (D)
 	// Consequently, we need to forward the projection, view, and model matrices to the shader programs
@@ -62,13 +63,11 @@ void Model::Draw(  )
 	GLint uProjection 	= glGetUniformLocation(m_shader, "projection");
 	GLint uModel 		= glGetUniformLocation(m_shader, "model");
 	GLint uView 		= glGetUniformLocation(m_shader, "view");
-	//Get model matrix
-	glm::mat4 model = m_local.GetModelMatrix() * m_world.m_matrix;
 
 	// Now send these values to the shader program
 	glUniformMatrix4fv(uProjection, 1, GL_FALSE, &Window::P[0][0]);
 	glUniformMatrix4fv(uView, 1, GL_FALSE, &Window::V[0][0]);
-	glUniformMatrix4fv(uModel, 1, GL_FALSE, &model[0][0]);
+	glUniformMatrix4fv(uModel, 1, GL_FALSE, &m[0][0]);
 	// Now Draw the cube. We simply need to bind the VAO associated with it.
 	glBindVertexArray(m_VAO);
 	// Tell OpenGL to Draw with triangles, using 36 indices, the type of the indices, and the offset to start from

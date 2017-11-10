@@ -3,14 +3,14 @@
 //
 #include "PointLightModel.h"
 
-PointLightModel::PointLightModel(GLuint shader, glm::vec3 position)
-		: Model("../resources/models/sphere.obj", shader)
+PointLightModel::PointLightModel(GLuint shader, Transform *transform)
+		: Model("../resources/models/sphere.obj", shader, transform)
 {
 	m_shader = shader;
-	m_local.m_position = position;
-	m_local.Scale(0.25f);
+	m_transform = transform;
+	m_transform->Scale(0.25f);
 
-	m_pointLight.m_position = m_local.m_position;
+	m_pointLight.m_position = m_transform->m_position;
 	m_pointLight.m_ambient = glm::vec3(0.2f); // Low influence
 	m_pointLight.m_diffuse = glm::vec3(0.5f);
 	m_pointLight.m_specular = glm::vec3(1.0f);
@@ -23,19 +23,19 @@ PointLightModel::PointLightModel(GLuint shader, glm::vec3 position)
 	m_pointLight.SetUniform(shader);
 }
 
-void PointLightModel::Draw( )
+void PointLightModel::Draw( glm::mat4 m )
 {
 	glUseProgram(m_shader);
 	GLint colorLoc     = glGetUniformLocation(m_shader, "color");
 	glUniform3f(colorLoc, m_pointLight.m_specular.r, m_pointLight.m_specular.g, m_pointLight.m_specular.b);
 
-	Model::Draw();
+	Model::Draw( m );
 }
 
 void PointLightModel::Update()
 {
 	//Update lights etc
-	m_pointLight.m_position = m_local.m_position;
+	m_pointLight.m_position = m_transform->m_position;
 
 	//update phong shader
 	glUseProgram(m_shader);

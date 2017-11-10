@@ -12,25 +12,34 @@
 #include <GL/glew.h>
 #endif
 
+// Use of degrees is deprecated. Use radians instead.
+#ifndef GLM_FORCE_RADIANS
+#define GLM_FORCE_RADIANS
+#endif
+
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+
 #include "Node.h"
+#include "../renderer/model/Transform.h"
 #include <list>
 
 class TransformNode : public Node
 {
 //Members
 public:
-	glm::mat4 m_M;
+	Transform m_transform;
 	std::list<Node*> m_children;
 //Functions
 public:
 	TransformNode( )
 	{
-		m_M = glm::mat4(1.0f);
+		//Empty constructor
 	};
 
 	void Draw(glm::mat4 C) override
 	{
-		glm::mat4 M_new =C*m_M;
+		glm::mat4 M_new = C * m_transform.GetModelMatrix();
 		for(auto &n : m_children)
 		{
 			n->Draw(M_new);

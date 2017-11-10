@@ -9,6 +9,7 @@
 
 #include "renderer/Camera.h"
 #include "renderer/model/Model.h"
+#include "renderer/model/Transform.h"
 #include "renderer/model/CubeMapModel.h"
 #include "renderer/lighting/Light.h"
 #include "renderer/shader.h"

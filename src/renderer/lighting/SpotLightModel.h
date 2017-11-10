@@ -18,9 +18,9 @@ public:
 	SpotLight m_spotLight;
 //Functions
 public:
-	SpotLightModel(GLuint shader, glm::vec3 position = glm::vec3(0));
+	SpotLightModel(GLuint shader, Transform *transform);
 
-	void Draw() override;
+	void Draw( glm::mat4 m ) override;
 	void Update() override;
 };
 

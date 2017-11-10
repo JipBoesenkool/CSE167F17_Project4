@@ -12,12 +12,13 @@ class PointLightModel : public Model
 {
 //Members
 public:
+	Transform *m_transform;
 	PointLight m_pointLight;
 //Functions
 public:
-	PointLightModel(GLuint shader, glm::vec3 position = glm::vec3(0));
+	PointLightModel(GLuint shader, Transform *transform);
 
-	void Draw() override;
+	void Draw( glm::mat4 m ) override;
 	void Update() override;
 };
 

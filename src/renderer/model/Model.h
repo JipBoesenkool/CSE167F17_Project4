@@ -19,8 +19,7 @@ public:
 	//Composition, Model has
 	Mesh m_mesh;
 	Material m_material;
-	Transform m_world;
-	Transform m_local;
+	Transform *m_transform;
 	GLint m_shader;
 
 	// These variables are needed for the shader program
@@ -32,11 +31,11 @@ private:
 //Functions
 public:
 	Model();
-	Model(const char* filepath, GLuint shader);
+	Model(const char* filepath, GLuint shader, Transform *transform);
 	~Model();
 
 	void SetupMesh();
-	virtual void Draw( );
+	virtual void Draw( glm::mat4 m );
 	virtual void Update();
 };
 

@@ -19,7 +19,10 @@ class Scene
 private:
 	//Main node
 	TransformNode world;
+	TransformNode *bullets2world = nullptr;
+
 	TransformNode *robot2world;
+	TransformNode *floor2world;
 	TransformNode *head2robot;
 	TransformNode *body2robot;
 	TransformNode *limb2robot;
@@ -30,12 +33,17 @@ private:
 	TransformNode *light2world;
 
 	PointLightModel *pointLightObj;
+	bool sceneLoaded = false;
 //Functions
 public:
 	Scene();
+	~Scene();
 
 	virtual void Draw();
 	virtual void Update();
+
+
+	void Fire();
 };
 
 

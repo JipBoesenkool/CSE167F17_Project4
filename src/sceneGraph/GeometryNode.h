@@ -20,6 +20,11 @@ public:
 		m_model = model;
 	};
 
+	~GeometryNode( )
+	{
+		//Empty constructor
+	};
+
 	GeometryNode( const char* filepath, unsigned int shader, Transform *transform )
 	{
 		m_model = new Model(filepath, shader, transform);

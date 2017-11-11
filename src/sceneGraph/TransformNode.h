@@ -37,6 +37,17 @@ public:
 		//Empty constructor
 	};
 
+	TransformNode(const TransformNode &obj)
+	{
+		m_transform = obj.m_transform;
+		m_children = obj.m_children;
+	};
+
+	~TransformNode( )
+	{
+
+	};
+
 	void Draw(glm::mat4 C) override
 	{
 		glm::mat4 M_new = C * m_transform.GetModelMatrix();

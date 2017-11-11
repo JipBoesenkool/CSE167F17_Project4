@@ -13,7 +13,7 @@ GLint activeShader;
 DirLightModel *dirLightObj;
 
 // Default camera parameters
-Camera camera( glm::vec3(0.0f, 0.0f, 20.0f) );
+Camera Window::camera( glm::vec3(0.0f, 1.0f, 20.0f) );
 
 enum class ModelState
 {
@@ -51,7 +51,7 @@ void Window::initialize_objects()
 	//Set up static camera
 	glUseProgram(Window::shaderPhongProgram);
 	GLint viewPosLoc     = glGetUniformLocation(Window::shaderPhongProgram, "viewPos");
-	glUniform3f(viewPosLoc, camera.Position.x, camera.Position.y, camera.Position.z);
+	glUniform3f(viewPosLoc, Window::camera.Position.x, Window::camera.Position.y, Window::camera.Position.z);
 
 	//Light objects
 	//Point light
@@ -132,8 +132,8 @@ void Window::resize_callback(GLFWwindow* window, int width, int height)
 
 	if (height > 0)
 	{
-		P = glm::perspective(camera.Zoom, (float)width / (float)height, 0.1f, 1000.0f);
-		V = camera.GetViewMatrix();
+		P = glm::perspective(Window::camera.Zoom, (float)width / (float)height, 0.1f, 1000.0f);
+		V = Window::camera.GetViewMatrix();
 	}
 }
 
@@ -147,8 +147,8 @@ void Window::display_callback(GLFWwindow* window)
 	// Clear the color and depth buffers
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	P = glm::perspective(camera.Zoom, (float)width / (float)height, 0.1f, 1000.0f);
-	V = camera.GetViewMatrix();
+	P = glm::perspective(Window::camera.Zoom, (float)width / (float)height, 0.1f, 1000.0f);
+	V = Window::camera.GetViewMatrix();
 
 	//TODO: set globally for all shaders
 	//Update view, projection matrices
@@ -183,7 +183,7 @@ void Window::display_callback(GLFWwindow* window)
 	// Use coresponding shader when setting uniforms/drawing objects
 	glUseProgram(activeShader);
 	GLint viewPosLoc     = glGetUniformLocation(activeShader, "viewPos");
-	glUniform3f(viewPosLoc, camera.Position.x, camera.Position.y, camera.Position.z);
+	glUniform3f(viewPosLoc, Window::camera.Position.x, Window::camera.Position.y, Window::camera.Position.z);
 
 	sceneProj3->Draw();
 
@@ -245,22 +245,28 @@ void Window::key_callback(GLFWwindow* window, int key, int scancode, int action,
 
 	if (action == GLFW_PRESS || action == GLFW_REPEAT)
 	{
+		//Fire
+		if (key == GLFW_KEY_F)
+		{
+			sceneProj3->Fire();
+		}
+
 		//Translation
 		if (key == GLFW_KEY_UP)
 		{
-			camera.ProcessKeyboard( Camera_Movement::FORWARD, 0.1f );
+			Window::camera.ProcessKeyboard( Camera_Movement::FORWARD, 0.1f );
 		}
 		if (key == GLFW_KEY_DOWN)
 		{
-			camera.ProcessKeyboard( Camera_Movement::BACKWARD, 0.1f );
+			Window::camera.ProcessKeyboard( Camera_Movement::BACKWARD, 0.1f );
 		}
 		if (key == GLFW_KEY_LEFT)
 		{
-			camera.ProcessKeyboard( Camera_Movement::LEFT, 0.1f );
+			Window::camera.ProcessKeyboard( Camera_Movement::LEFT, 0.1f );
 		}
 		if (key == GLFW_KEY_RIGHT)
 		{
-			camera.ProcessKeyboard( Camera_Movement::RIGHT, 0.1f );
+			Window::camera.ProcessKeyboard( Camera_Movement::RIGHT, 0.1f );
 		}
 	}
 }
@@ -295,7 +301,7 @@ void Window::mouse_callback(GLFWwindow* window, double xpos, double ypos)
 				float sensitivity = 5.0f;
 				float rotAngle = velocity * sensitivity;
 
-				camera.ProcessMouseMovement(rotAngle * rotAxis);
+				Window::camera.ProcessMouseMovement(rotAngle * rotAxis);
 			}
 		}
 		break;
@@ -308,7 +314,7 @@ void Window::mouse_callback(GLFWwindow* window, double xpos, double ypos)
 			//xoffset *= sensitivity;
 			//yoffset *= sensitivity;
 
-			camera.ProcessMouseMovement( xoffset, yoffset, false);
+			Window::camera.ProcessMouseMovement( xoffset, yoffset, false);
 		};
 		break;
 	}
@@ -322,8 +328,8 @@ void Window::scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 	float sensitivity = 0.05;
 	yoffset *= sensitivity;
 
-	camera.ProcessMouseScroll(yoffset);
-	P = glm::perspective(camera.Zoom, (float)width / (float)height, 0.1f, 1000.0f);
+	Window::camera.ProcessMouseScroll(yoffset);
+	P = glm::perspective(Window::camera.Zoom, (float)width / (float)height, 0.1f, 1000.0f);
 }
 
 glm::vec3 Window::trackBallMapping(double xpos, double ypos)

@@ -65,6 +65,30 @@ struct PointLight {
     GLfloat m_linear;
     GLfloat m_quadratic;
 
+	void SetUniform(GLint shader, int index)
+	{
+		// Point light
+		std::string number = std::to_string(index);
+
+		glUseProgram(shader);
+		GLint lightDirLoc      = glGetUniformLocation(shader, ("pointLights[" + number + "].position").c_str() );
+		GLint lightAmbientLoc  = glGetUniformLocation(shader, ("pointLights[" + number + "].ambient").c_str() );
+		GLint lightDiffuseLoc  = glGetUniformLocation(shader, ("pointLights[" + number + "].diffuse").c_str() );
+		GLint lightSpecularLoc = glGetUniformLocation(shader, ("pointLights[" + number + "].specular").c_str() );
+
+		glUniform3f(lightDirLoc, m_position.x, m_position.y, m_position.z);
+		glUniform3f(lightAmbientLoc,  m_ambient.x,   m_ambient.y,   m_ambient.z);
+		glUniform3f(lightDiffuseLoc,  m_diffuse.x,   m_diffuse.y,   m_diffuse.z);
+		glUniform3f(lightSpecularLoc, m_specular.x,  m_specular.y,  m_specular.z);
+
+		GLint lightConstantLoc  = glGetUniformLocation(shader, ("pointLights[" + number + "].constant").c_str() );
+		GLint lightLinearLoc    = glGetUniformLocation(shader, ("pointLights[" + number + "].linear").c_str() );
+		GLint lightQuadraticLoc = glGetUniformLocation(shader, ("pointLights[" + number + "].quadratic").c_str() );
+		glUniform1f(lightConstantLoc,  m_constant);
+		glUniform1f(lightLinearLoc,    m_linear);
+		glUniform1f(lightQuadraticLoc, m_quadratic);
+	}
+
     void SetUniform(GLint shader)
     {
 		glUseProgram(shader);

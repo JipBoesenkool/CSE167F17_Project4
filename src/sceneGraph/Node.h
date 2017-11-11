@@ -12,6 +12,7 @@ class Node
 {
 //Functions
 public:
+	virtual ~Node(){ };
 	virtual void Draw(glm::mat4 C) = 0;
 	virtual void Update() = 0;
 };

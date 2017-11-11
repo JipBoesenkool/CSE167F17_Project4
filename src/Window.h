@@ -21,6 +21,7 @@
 class Window
 {
 public:
+	static Camera camera;
 	static GLint shaderNormalProgram;
 	static GLint shaderVisualLightProgram;
 	static GLint shaderPhongProgram;

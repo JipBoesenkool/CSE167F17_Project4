@@ -160,7 +160,7 @@ public:
     }
 
 private:
-    // Calculates the front vector from the LOGLCamera's (updated) Eular Angles
+    // Calculates the front vector from the Camera's (updated) Eular Angles
     void UpdateCameraVectors()
     {
         // Calculate the new Front vector

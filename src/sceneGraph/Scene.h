@@ -10,6 +10,9 @@
 #include "TransformNode.h"
 #include "GeometryNode.h"
 
+#include "../physics/BoundingVolume.h"
+#include "../physics/BoundingSphere.h"
+
 #include "../renderer/model/Model.h"
 #include "../renderer/lighting/PointLightModel.h"
 
@@ -22,6 +25,8 @@ private:
 	TransformNode *bullets2world = nullptr;
 
 	TransformNode *robot2world;
+	GeometryNode *robot;
+
 	TransformNode *floor2world;
 	TransformNode *head2robot;
 	TransformNode *body2robot;

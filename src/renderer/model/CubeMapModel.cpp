@@ -19,7 +19,9 @@ void CubeMapModel::Draw( glm::mat4 m )
 	glBindVertexArray(m_VAO);
 	glBindTexture(GL_TEXTURE_CUBE_MAP, m_textureID);
 
+	glDisable(GL_CULL_FACE);
 	Model::Draw(m);
+	glEnable(GL_CULL_FACE);
 
 	glDepthMask(GL_TRUE);
 }

@@ -22,6 +22,7 @@
 
 #include "Node.h"
 #include "../renderer/model/Transform.h"
+#include "../physics/BoundingVolume.h"
 #include <list>
 
 class TransformNode : public Node
@@ -29,51 +30,19 @@ class TransformNode : public Node
 //Members
 public:
 	Transform m_transform;
+	BoundingVolume *m_bVolume = nullptr;
 	std::list<Node*> m_children;
 //Functions
 public:
-	TransformNode( )
-	{
-		//Empty constructor
-	};
+	TransformNode( );
+	TransformNode(const TransformNode &obj);
+	~TransformNode( );
 
-	TransformNode(const TransformNode &obj)
-	{
-		m_transform = obj.m_transform;
-		m_children = obj.m_children;
-	};
+	void Draw(glm::mat4 C) override;
+	void Update() override;
 
-	~TransformNode( )
-	{
-
-	};
-
-	void Draw(glm::mat4 C) override
-	{
-		glm::mat4 M_new = C * m_transform.GetModelMatrix();
-		for(auto &n : m_children)
-		{
-			n->Draw(M_new);
-		}
-	};
-
-	void Update() override
-	{
-		for(auto &n : m_children)
-		{
-			n->Update();
-		}
-	};
-
-	void AddChild(Node *child)
-	{
-		m_children.push_back( child );
-	};
-
-	void RemoveChild( Node *child )
-	{
-		m_children.remove( child );
-	};
+	void AddChild(Node *child);
+	void RemoveChild( Node *child );
 };
 
 #endif //TRANSFORMNODE_H

@@ -44,6 +44,12 @@ Transform::Transform(bool localOrientation, glm::vec3 position, glm::vec3 rotati
 	m_updateMatrix = true;
 }
 
+void Transform::SetPosition(glm::vec3 position)
+{
+	m_position = position;
+	m_updateMatrix = true;
+}
+
 void Transform::Move(glm::vec3 direction)
 {
 	m_position += direction;

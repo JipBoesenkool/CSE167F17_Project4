@@ -1,7 +1,16 @@
 #include "window.h"
+#include <glm/gtx/vector_angle.hpp>
+#include <glm/ext.hpp>
 
 const char* window_title = "Project 3";
 Model* skybox;
+Model* frustum;
+glm::vec4 Window::frustumPlanes[6];
+bool cullCam 		= true;
+bool Window::cull 	= true;
+
+double lastFrameTime = 1.0f;
+int nbFrames = 0;
 
 Scene *sceneProj3;
 
@@ -31,14 +40,17 @@ int Window::height;
 
 glm::mat4 Window::P;
 glm::mat4 Window::V;
+glm::mat4 Window::cullV;
 
+bool Window::NDEBUG = false;
+GLint Window::shaderSimpleProgram;
 GLint Window::shaderNormalProgram;
 GLint Window::shaderPhongProgram;
 GLint Window::shaderVisualLightProgram;
 
 void Window::initialize_objects()
 {
-	// Load the shader program. Make sure you have the correct filepath up top
+	Window::shaderSimpleProgram = LoadShaders("../resources/shaders/shader.vert", "../resources/shaders/shader.frag");
 	Window::shaderNormalProgram = LoadShaders("../resources/shaders/shaderNormal.vert", "../resources/shaders/shaderNormal.frag");
 	Window::shaderPhongProgram = LoadShaders("../resources/shaders/fullPhong.vert", "../resources/shaders/fullPhong.frag");
 	Window::shaderVisualLightProgram = LoadShaders("../resources/shaders/lamp.vert", "../resources/shaders/lamp.frag");
@@ -58,6 +70,8 @@ void Window::initialize_objects()
 	dirLightObj = new DirLightModel(Window::shaderPhongProgram, new Transform(true, glm::vec3(1.0f)));
 
 	sceneProj3 = new Scene();
+	//Setup frustum cube
+	frustum = new Model("../resources/models/cube.obj", shaderSimpleProgram, new Transform() );
 }
 
 // Treat this as a destructor function. Delete dynamically allocated memory here.
@@ -71,6 +85,8 @@ void Window::clean_up()
 	glDeleteProgram(Window::shaderPhongProgram);
 	glDeleteProgram(Window::shaderVisualLightProgram);
 	glDeleteProgram(shaderSkyBoxProgram);
+
+	lastFrameTime = glfwGetTime();
 }
 
 GLFWwindow* Window::create_window(int width, int height)
@@ -144,6 +160,9 @@ void Window::idle_callback()
 
 void Window::display_callback(GLFWwindow* window)
 {
+	//FPS counter
+	CalculateFramesPerSecond(window);
+
 	// Clear the color and depth buffers
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -152,9 +171,15 @@ void Window::display_callback(GLFWwindow* window)
 
 	//TODO: set globally for all shaders
 	//Update view, projection matrices
+	glUseProgram(Window::shaderSimpleProgram);
+	GLint uProjection 	= glGetUniformLocation(Window::shaderSimpleProgram, "projection");
+	GLint uView 		= glGetUniformLocation(Window::shaderSimpleProgram, "view");
+	glUniformMatrix4fv(uProjection, 1, GL_FALSE, &Window::P[0][0]);
+	glUniformMatrix4fv(uView, 1, GL_FALSE, &Window::V[0][0]);
+
 	glUseProgram(Window::shaderPhongProgram);
-	GLint uProjection 	= glGetUniformLocation(Window::shaderPhongProgram, "projection");
-	GLint uView 		= glGetUniformLocation(Window::shaderPhongProgram, "view");
+	uProjection 	= glGetUniformLocation(Window::shaderPhongProgram, "projection");
+	uView 		= glGetUniformLocation(Window::shaderPhongProgram, "view");
 	glUniformMatrix4fv(uProjection, 1, GL_FALSE, &Window::P[0][0]);
 	glUniformMatrix4fv(uView, 1, GL_FALSE, &Window::V[0][0]);
 
@@ -186,6 +211,26 @@ void Window::display_callback(GLFWwindow* window)
 	glUniform3f(viewPosLoc, Window::camera.Position.x, Window::camera.Position.y, Window::camera.Position.z);
 
 	sceneProj3->Draw();
+
+	//Debug: draw frustum
+	if(NDEBUG)
+	{
+		glDisable(GL_CULL_FACE);
+		glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
+
+		if(cullCam)
+		{
+			Window::cullV = Window::V;
+			frustum->m_transform->SetPosition( Window::camera.Position);
+			frustum->m_transform->m_rotation = glm::vec3( Window::camera.Pitch, -(Window::camera.Yaw + 90.0f), 0.0f);
+			CalculateFrustumPlanes();
+		}
+
+		glm::mat4 frustumMatrix = frustum->m_transform->GetModelMatrix() * glm::inverse(P);
+		frustum->Draw( frustumMatrix );
+		glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
+		glEnable(GL_CULL_FACE);
+	}
 
 	//Draw the lights
 	dirLightObj->Draw( glm::mat4(1.0f) );
@@ -249,6 +294,18 @@ void Window::key_callback(GLFWwindow* window, int key, int scancode, int action,
 		if (key == GLFW_KEY_F)
 		{
 			sceneProj3->Fire();
+		}
+		if (key == GLFW_KEY_C)
+		{
+			Window::cull = !Window::cull;
+		}
+		if (key == GLFW_KEY_V)
+		{
+			cullCam = !cullCam;
+		}
+		if (key == GLFW_KEY_B)
+		{
+			Window::NDEBUG = !Window::NDEBUG;
 		}
 
 		//Translation
@@ -344,4 +401,59 @@ glm::vec3 Window::trackBallMapping(double xpos, double ypos)
 	v.z = sqrtf(1.001 - d*d);
 	v = glm::normalize(v); // Still need to normalize, since we only capped d, not v.
 	return v;
+}
+
+//http://lolengine.net/blog/2014/02/24/quaternion-from-two-vectors-final
+glm::vec3 Window::AngleBetween(glm::vec3 u, glm::vec3 v)
+{
+	glm::vec3 w = glm::cross(u, v);
+	glm::quat q = glm::quat(glm::dot(u, v), w.x, w.y, w.z);
+	q.w += q.length();
+	//q = glm::normalize(q);
+	return glm::eulerAngles(q);
+}
+
+void Window::CalculateFramesPerSecond(GLFWwindow* window)
+{
+	double currentFrameTime = glfwGetTime();
+	nbFrames++;
+	if ( currentFrameTime - lastFrameTime >= 1.0f )
+	{
+		//Information
+		std::string str(window_title);
+		str += " - " + std::to_string(nbFrames) + "fps";
+		std::string cullingBool = (Window::cull) ? "true" : "false";
+		str += " - culling: " + cullingBool;
+
+		//Set window title
+		glfwSetWindowTitle(window, str.c_str() );
+		nbFrames = 0;
+		lastFrameTime += 1.0;
+	}
+}
+
+//http://www.lighthouse3d.com/tutorials/view-frustum-culling/clip-space-approach-extracting-the-planes/
+void Window::CalculateFrustumPlanes(  )
+{
+	// Extracting the planes.
+	glm::mat4 matrix = Window::P * Window::cullV;
+	glm::vec4 rowX = glm::row(matrix, 0);
+	glm::vec4 rowY = glm::row(matrix, 1);
+	glm::vec4 rowZ = glm::row(matrix, 2);
+	glm::vec4 rowW = glm::row(matrix, 3);
+
+	Window::frustumPlanes[0] = glm::normalize(rowW + rowX);
+	Window::frustumPlanes[1] = glm::normalize(rowW - rowX);
+	Window::frustumPlanes[2] = glm::normalize(rowW + rowY);
+	Window::frustumPlanes[3] = glm::normalize(rowW - rowY);
+	Window::frustumPlanes[4] = glm::normalize(rowW + rowZ);
+	Window::frustumPlanes[5] = glm::normalize(rowW - rowZ);
+
+	// Normalizing the planes.
+	for( int i = 0; i < 6; i++ )
+	{
+		glm::vec3 normal(Window::frustumPlanes[i].x, Window::frustumPlanes[i].y, Window::frustumPlanes[i].z);
+		float length = glm::length(normal);
+		Window::frustumPlanes[i] = -Window::frustumPlanes[i] / length;
+	}
 }

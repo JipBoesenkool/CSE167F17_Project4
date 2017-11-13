@@ -39,6 +39,7 @@ public:
 			glm::vec3 scale = glm::vec3(1.0f));
 
 	//Manipulation
+	void SetPosition(glm::vec3 position);
 	void Move(glm::vec3 direction);
 	void Rotate(glm::vec3 rotation);
 	void Scale(glm::vec3 scale);

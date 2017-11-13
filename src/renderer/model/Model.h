@@ -26,8 +26,6 @@ public:
 	//Opengl
 	GLuint m_VBO, m_VAO, m_EBO;
 
-private:
-
 //Functions
 public:
 	Model();

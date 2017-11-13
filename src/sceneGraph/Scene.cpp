@@ -37,8 +37,9 @@ Scene::Scene()
 //Robot
 	//Create robot:
 	robot2world = new TransformNode();
-	floor2world = new TransformNode();
+	robot2world->m_bVolume = new BoundingSphere( &robot2world->m_transform );
 
+	floor2world = new TransformNode();
 	Model *head = new Model("../resources/models/robot-parts/head.obj", Window::shaderNormalProgram, &robot2world->m_transform);
 	Model *eyeball = new Model("../resources/models/robot-parts/eyeball.obj", Window::shaderNormalProgram, &robot2world->m_transform);
 	Model *limb = new Model("../resources/models/robot-parts/limb.obj", Window::shaderNormalProgram, &robot2world->m_transform);
@@ -94,10 +95,13 @@ Scene::Scene()
 //End robot
 
 // Robot Army (15 Points)
-	for( int x = -20; x < 20 ; x = x + 4 ) {
-		for( int z = -20; z < 20 ; z = z + 4 ) {
+	//Amount, 1 = 100
+	float amount = 5;
+	for( int x = -20*amount; x < 20*amount ; x = x + 4 ) {
+		for( int z = -20*amount; z < 20*amount ; z = z + 4 ) {
 			TransformNode *next = new TransformNode( *robot2world );
 			next->m_transform.m_position = glm::vec3( x, 0, z );
+			next->m_bVolume->m_transform->m_position = glm::vec3( x, 0, z );
 			world.AddChild( next );
 		}
 	}
@@ -127,9 +131,10 @@ void Scene::Draw()
 	robot2world->m_transform.Rotate( glm::vec3(0, 1.0f, 0) );
 	bunny2robot->m_transform.Rotate( glm::vec3(0, 1.0f, 0) );
 	 */
+//End test
 	body2robot->m_transform.Rotate( glm::vec3(-1.0f, 0.0f, 0.0f) );
 	head2robot->m_transform.Rotate( glm::vec3(0.0f, 0.0f, 1.0f) );
-//End test
+	eye2head->m_transform.Rotate( glm::vec3(0.0f, 0.0f, 1.0f) );
 
 	world.Draw( glm::mat4(1.0f) );
 }

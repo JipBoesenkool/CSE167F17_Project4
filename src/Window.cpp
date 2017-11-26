@@ -212,6 +212,12 @@ void Window::display_callback(GLFWwindow* window)
 
 	sceneProj3->Draw();
 
+	if(cullCam)
+	{
+		Window::cullV = Window::V;
+		CalculateFrustumPlanes();
+	}
+
 	//Debug: draw frustum
 	if(NDEBUG)
 	{
@@ -220,10 +226,8 @@ void Window::display_callback(GLFWwindow* window)
 
 		if(cullCam)
 		{
-			Window::cullV = Window::V;
 			frustum->m_transform->SetPosition( Window::camera.Position);
 			frustum->m_transform->m_rotation = glm::vec3( Window::camera.Pitch, -(Window::camera.Yaw + 90.0f), 0.0f);
-			CalculateFrustumPlanes();
 		}
 
 		glm::mat4 frustumMatrix = frustum->m_transform->GetModelMatrix() * glm::inverse(P);

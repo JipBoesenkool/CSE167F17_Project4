@@ -135,6 +135,7 @@ void Scene::Draw()
 	body2robot->m_transform.Rotate( glm::vec3(-1.0f, 0.0f, 0.0f) );
 	head2robot->m_transform.Rotate( glm::vec3(0.0f, 0.0f, 1.0f) );
 	eye2head->m_transform.Rotate( glm::vec3(0.0f, 0.0f, 1.0f) );
+	//limb2robot->m_transform.Rotate( glm::vec3(1.0f, 0.0f, 0.0f) );
 
 	world.Draw( glm::mat4(1.0f) );
 }

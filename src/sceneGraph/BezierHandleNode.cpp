@@ -82,10 +82,11 @@ void BezierHandleNode::Update()
 		GLint uColor 		= glGetUniformLocation(Window::shaderLineProgram, "color");
 		glUniform4f(uColor, 1.0f, 0.0f, 0.0f, 1.0f);
 
-		if(m_next != nullptr)
+		if(m_next != nullptr && m_prev != nullptr)
 		{
 			//Recalculate curve
 			CalculateBezierCurve();
+			m_prev->m_needsUpdate = true;
 
 			//Set opengl handle
 			glGenVertexArrays(1, &m_handleVAO);

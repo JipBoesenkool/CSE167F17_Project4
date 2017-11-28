@@ -33,6 +33,7 @@ public:
 	Transform *m_p0;
 
 	//Line intersecting point
+	BezierHandleNode *m_prev = nullptr;
 	BezierHandleNode *m_next = nullptr;
 	bool m_needsUpdate = true;
 

@@ -2,26 +2,32 @@
 // Created by Jip Boesenkool on 27/11/2017.
 //
 
-#ifndef CSE167_PROJECT3_CONTROLPOINT_H
-#define CSE167_PROJECT3_CONTROLPOINT_H
+#ifndef CONTROLPOINT_H
+#define CONTROLPOINT_H
 
 #include "TransformNode.h"
 #include "BezierHandleNode.h"
+#include "GeometryNode.h"
 
 class ControlPoint : public TransformNode
 {
 //Members
 public:
-	BezierHandleNode *parent;
-	BezierHandleNode *nextParent;
+	glm::mat4 m_storedMatrix = glm::mat4(1.0f);
+	GeometryNode *m_geoNode;
+	ControlPoint *m_cpPaired = nullptr;
+
+	BezierHandleNode *m_parent;
 //Functions
 public:
-	ControlPoint();
+	ControlPoint( GeometryNode *geoNode );
 	~ControlPoint();
 
 	void Draw(glm::mat4 C) override;
 	void Update() override;
+
+	void Move( glm::vec3 dir );
 };
 
 
-#endif //CSE167_PROJECT3_CONTROLPOINT_H
+#endif //CONTROLPOINT_H

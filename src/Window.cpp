@@ -28,13 +28,15 @@ enum class ModelState
 {
 	None = 0,
 	Rotation,
-	Transform
+	Transform,
+	Picking
 };
 
 ModelState modelState = ModelState::None;
 glm::vec3 lastMousePos = glm::vec3(0);
 bool firstMouse = true;
 
+int Window::selectedObject = -1;
 int Window::width;
 int Window::height;
 
@@ -43,6 +45,7 @@ glm::mat4 Window::V;
 glm::mat4 Window::cullV;
 
 bool Window::NDEBUG = false;
+GLint Window::shaderPickProgram;
 GLint Window::shaderLineProgram;
 GLint Window::shaderSimpleProgram;
 GLint Window::shaderNormalProgram;
@@ -51,6 +54,7 @@ GLint Window::shaderVisualLightProgram;
 
 void Window::initialize_objects()
 {
+	Window::shaderPickProgram = LoadShaders("../resources/shaders/picking.vert", "../resources/shaders/picking.frag");
 	Window::shaderLineProgram = LoadShaders("../resources/shaders/line.vert", "../resources/shaders/line.frag");
 	Window::shaderSimpleProgram = LoadShaders("../resources/shaders/shader.vert", "../resources/shaders/shader.frag");
 	Window::shaderNormalProgram = LoadShaders("../resources/shaders/shaderNormal.vert", "../resources/shaders/shaderNormal.frag");
@@ -83,6 +87,8 @@ void Window::clean_up()
 
 	delete(dirLightObj);
 
+	glDeleteProgram(Window::shaderPickProgram);
+	glDeleteProgram(Window::shaderLineProgram);
 	glDeleteProgram(Window::shaderNormalProgram);
 	glDeleteProgram(Window::shaderPhongProgram);
 	glDeleteProgram(Window::shaderVisualLightProgram);
@@ -179,6 +185,12 @@ void Window::display_callback(GLFWwindow* window)
 	glUniformMatrix4fv(uProjection, 1, GL_FALSE, &Window::P[0][0]);
 	glUniformMatrix4fv(uView, 1, GL_FALSE, &Window::V[0][0]);
 
+	glUseProgram(Window::shaderPickProgram);
+	uProjection 	= glGetUniformLocation(Window::shaderPickProgram, "projection");
+	uView 		= glGetUniformLocation(Window::shaderPickProgram, "view");
+	glUniformMatrix4fv(uProjection, 1, GL_FALSE, &Window::P[0][0]);
+	glUniformMatrix4fv(uView, 1, GL_FALSE, &Window::V[0][0]);
+
 	glUseProgram(Window::shaderLineProgram);
 	uProjection 	= glGetUniformLocation(Window::shaderLineProgram, "projection");
 	uView 		= glGetUniformLocation(Window::shaderLineProgram, "view");
@@ -258,6 +270,11 @@ void Window::key_callback(GLFWwindow* window, int key, int scancode, int action,
 {
 	if (action == GLFW_RELEASE)
 	{
+		if(key == GLFW_KEY_S && modelState == ModelState::Picking)
+		{
+			Window::selectedObject = -1;
+			modelState = ModelState::None;
+		}
 		if(key == GLFW_KEY_LEFT_ALT && modelState == ModelState::Rotation)
 		{
 			modelState = ModelState::None;
@@ -272,6 +289,16 @@ void Window::key_callback(GLFWwindow* window, int key, int scancode, int action,
 	if (action == GLFW_PRESS)
 	{
 		//mouse input
+		if (key == GLFW_MOUSE_BUTTON_1)
+		{
+			modelState = ModelState::Picking;
+			std::cout<<"picking state"<<std::endl;
+		}
+		if (key == GLFW_KEY_S)
+		{
+			modelState = ModelState::Picking;
+			std::cout<<"picking state"<<std::endl;
+		}
 		if (key == GLFW_KEY_LEFT_ALT)
 		{
 			modelState = ModelState::Rotation;
@@ -303,7 +330,6 @@ void Window::key_callback(GLFWwindow* window, int key, int scancode, int action,
 
 	if (action == GLFW_PRESS || action == GLFW_REPEAT)
 	{
-		//Fire
 		if (key == GLFW_KEY_C)
 		{
 			Window::cull = !Window::cull;
@@ -382,6 +408,28 @@ void Window::mouse_callback(GLFWwindow* window, double xpos, double ypos)
 
 			Window::camera.ProcessMouseMovement( xoffset, yoffset, false);
 		};
+		break;
+		case ModelState::Picking:
+		{
+			//Pick object
+			if(selectedObject < 0)
+			{
+				sceneProj3->MouseSelect( xpos, ypos );
+			}
+			else
+			{
+				//move object
+				float xoffset = xpos - lastMousePos.x;
+				float yoffset = lastMousePos.y - ypos;
+				glm::vec4 relMove = glm::vec4(xoffset, yoffset, 0.0f, 0.0f);
+				relMove = Window::V * relMove;
+
+				float sensitivity = 0.005;
+				relMove *= sensitivity;
+
+				sceneProj3->m_controlPoints[selectedObject]->Move( glm::vec3(relMove.x, relMove.y, -relMove.z) );
+			}
+		}
 		break;
 	}
 	// Save the location of the current point for the next movement.
@@ -467,6 +515,7 @@ void Window::CalculateFrustumPlanes(  )
 	}
 }
 
+/*
 void Window::MousePick()
 {
 	// PICKING IS DONE HERE
@@ -567,3 +616,4 @@ void Window::MousePick()
 		//continue; // skips the normal rendering
 	}
 }
+ */

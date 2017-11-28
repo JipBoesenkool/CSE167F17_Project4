@@ -26,11 +26,13 @@ public:
 	static bool cull;
 	static bool NDEBUG;
 	static Camera camera;
+	static GLint shaderPickProgram;
 	static GLint shaderLineProgram;
 	static GLint shaderSimpleProgram;
 	static GLint shaderNormalProgram;
 	static GLint shaderVisualLightProgram;
 	static GLint shaderPhongProgram;
+	static int selectedObject;
 	static int width;
 	static int height;
 	static glm::mat4 P; // P for projection

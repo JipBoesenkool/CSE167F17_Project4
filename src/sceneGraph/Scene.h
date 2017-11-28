@@ -10,6 +10,7 @@
 #include "TransformNode.h"
 #include "GeometryNode.h"
 #include "BezierHandleNode.h"
+#include "ControlPoint.h"
 
 #include "../physics/BoundingVolume.h"
 #include "../physics/BoundingSphere.h"
@@ -21,6 +22,11 @@ class Scene
 {
 //Members
 private:
+//Picking
+	//Framebuffer for picking
+	GLuint m_fbo, m_rbo, m_pbo;
+	GLuint m_fboTexture;
+
 	//Shaders
 
 	//Main node
@@ -34,6 +40,8 @@ private:
 	TransformNode *light2world;
 	PointLightModel *pointLightObj;
 	bool sceneLoaded = false;
+public:
+	std::vector<ControlPoint *> m_controlPoints;
 //Functions
 public:
 	Scene();
@@ -41,6 +49,10 @@ public:
 
 	virtual void Draw();
 	virtual void Update();
+
+	void InitPickingRenderBuffer();
+	void RenderPickingToBuffer();
+	void MouseSelect(double xpos, double ypos);
 };
 
 

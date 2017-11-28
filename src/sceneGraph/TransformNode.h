@@ -38,8 +38,8 @@ public:
 	TransformNode(const TransformNode &obj);
 	~TransformNode( );
 
-	void Draw(glm::mat4 C) override;
-	void Update() override;
+	virtual void Draw(glm::mat4 C) override;
+	virtual void Update() override;
 
 	void AddChild(Node *child);
 	void RemoveChild( Node *child );

@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.2)
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -stdlib=libc++")
-set(EXECUTABLE_NAME "CSE167_Project3")
+set(EXECUTABLE_NAME "CSE167_RollerCoaster")
 
 project(${EXECUTABLE_NAME})
 ################################################################################

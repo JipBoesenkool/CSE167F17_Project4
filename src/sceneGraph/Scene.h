@@ -9,6 +9,7 @@
 #include "Node.h"
 #include "TransformNode.h"
 #include "GeometryNode.h"
+#include "BezierHandleNode.h"
 
 #include "../physics/BoundingVolume.h"
 #include "../physics/BoundingSphere.h"
@@ -20,23 +21,17 @@ class Scene
 {
 //Members
 private:
+	//Shaders
+
 	//Main node
 	TransformNode world;
-	TransformNode *bullets2world = nullptr;
+	TransformNode *track;
+	GeometryNode *redSphere;
+	GeometryNode *blueSphere;
 
-	TransformNode *robot2world;
-	GeometryNode *robot;
+	GeometryNode *cart;
 
-	TransformNode *floor2world;
-	TransformNode *head2robot;
-	TransformNode *body2robot;
-	TransformNode *limb2robot;
-	TransformNode *eye2head;
-	TransformNode *ant2head;
-
-	TransformNode *bunny2robot;
 	TransformNode *light2world;
-
 	PointLightModel *pointLightObj;
 	bool sceneLoaded = false;
 //Functions
@@ -46,9 +41,6 @@ public:
 
 	virtual void Draw();
 	virtual void Update();
-
-
-	void Fire();
 };
 
 

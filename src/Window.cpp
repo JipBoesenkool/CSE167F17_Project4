@@ -2,7 +2,7 @@
 #include <glm/gtx/vector_angle.hpp>
 #include <glm/ext.hpp>
 
-const char* window_title = "Project 3";
+const char* window_title = "Roller Coaster";
 Model* skybox;
 Model* frustum;
 glm::vec4 Window::frustumPlanes[6];
@@ -43,6 +43,7 @@ glm::mat4 Window::V;
 glm::mat4 Window::cullV;
 
 bool Window::NDEBUG = false;
+GLint Window::shaderLineProgram;
 GLint Window::shaderSimpleProgram;
 GLint Window::shaderNormalProgram;
 GLint Window::shaderPhongProgram;
@@ -50,6 +51,7 @@ GLint Window::shaderVisualLightProgram;
 
 void Window::initialize_objects()
 {
+	Window::shaderLineProgram = LoadShaders("../resources/shaders/line.vert", "../resources/shaders/line.frag");
 	Window::shaderSimpleProgram = LoadShaders("../resources/shaders/shader.vert", "../resources/shaders/shader.frag");
 	Window::shaderNormalProgram = LoadShaders("../resources/shaders/shaderNormal.vert", "../resources/shaders/shaderNormal.frag");
 	Window::shaderPhongProgram = LoadShaders("../resources/shaders/fullPhong.vert", "../resources/shaders/fullPhong.frag");
@@ -177,6 +179,12 @@ void Window::display_callback(GLFWwindow* window)
 	glUniformMatrix4fv(uProjection, 1, GL_FALSE, &Window::P[0][0]);
 	glUniformMatrix4fv(uView, 1, GL_FALSE, &Window::V[0][0]);
 
+	glUseProgram(Window::shaderLineProgram);
+	uProjection 	= glGetUniformLocation(Window::shaderLineProgram, "projection");
+	uView 		= glGetUniformLocation(Window::shaderLineProgram, "view");
+	glUniformMatrix4fv(uProjection, 1, GL_FALSE, &Window::P[0][0]);
+	glUniformMatrix4fv(uView, 1, GL_FALSE, &Window::V[0][0]);
+
 	glUseProgram(Window::shaderPhongProgram);
 	uProjection 	= glGetUniformLocation(Window::shaderPhongProgram, "projection");
 	uView 		= glGetUniformLocation(Window::shaderPhongProgram, "view");
@@ -211,6 +219,7 @@ void Window::display_callback(GLFWwindow* window)
 	glUniform3f(viewPosLoc, Window::camera.Position.x, Window::camera.Position.y, Window::camera.Position.z);
 
 	sceneProj3->Draw();
+
 
 	if(cullCam)
 	{
@@ -295,10 +304,6 @@ void Window::key_callback(GLFWwindow* window, int key, int scancode, int action,
 	if (action == GLFW_PRESS || action == GLFW_REPEAT)
 	{
 		//Fire
-		if (key == GLFW_KEY_F)
-		{
-			sceneProj3->Fire();
-		}
 		if (key == GLFW_KEY_C)
 		{
 			Window::cull = !Window::cull;
@@ -459,5 +464,106 @@ void Window::CalculateFrustumPlanes(  )
 		glm::vec3 normal(Window::frustumPlanes[i].x, Window::frustumPlanes[i].y, Window::frustumPlanes[i].z);
 		float length = glm::length(normal);
 		Window::frustumPlanes[i] = -Window::frustumPlanes[i] / length;
+	}
+}
+
+void Window::MousePick()
+{
+	// PICKING IS DONE HERE
+	// (Instead of picking each frame if the mouse button is down,
+	// you should probably only check if the mouse button was just released)
+	if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT)){
+
+		// Clear the screen in white
+		glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		glUseProgram(pickingProgramID);
+
+		// Only the positions are needed (not the UVs and normals)
+		glEnableVertexAttribArray(0);
+
+		// Draw the 100 monkeys, each with a slighly different color
+		for(int i=0; i<100; i++){
+
+
+			glm::mat4 RotationMatrix = glm::toMat4(orientations[i]);
+			glm::mat4 TranslationMatrix = translate(mat4(), positions[i]);
+			glm::mat4 ModelMatrix = TranslationMatrix * RotationMatrix;
+
+			glm::mat4 MVP = ProjectionMatrix * ViewMatrix * ModelMatrix;
+
+			// Send our transformation to the currently bound shader,
+			// in the "MVP" uniform
+			glUniformMatrix4fv(PickingMatrixID, 1, GL_FALSE, &MVP[0][0]);
+
+			// Convert "i", the integer mesh ID, into an RGB color
+			int r = (i & 0x000000FF) >>  0;
+			int g = (i & 0x0000FF00) >>  8;
+			int b = (i & 0x00FF0000) >> 16;
+
+			// OpenGL expects colors to be in [0,1], so divide by 255.
+			glUniform4f(pickingColorID, r/255.0f, g/255.0f, b/255.0f, 1.0f);
+
+			// 1rst attribute buffer : vertices
+			glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
+			glVertexAttribPointer(
+					0,                  // attribute
+					3,                  // size
+					GL_FLOAT,           // type
+					GL_FALSE,           // normalized?
+					0,                  // stride
+					(void*)0            // array buffer offset
+			);
+
+			// Index buffer
+			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elementbuffer);
+
+			// Draw the triangles !
+			glDrawElements(
+					GL_TRIANGLES,      // mode
+					indices.size(),    // count
+					GL_UNSIGNED_SHORT,   // type
+					(void*)0           // element array buffer offset
+			);
+
+		}
+
+		glDisableVertexAttribArray(0);
+
+
+		// Wait until all the pending drawing commands are really done.
+		// Ultra-mega-over slow !
+		// There are usually a long time between glDrawElements() and
+		// all the fragments completely rasterized.
+		glFlush();
+		glFinish();
+
+
+		glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+
+		// Read the pixel at the center of the screen.
+		// You can also use glfwGetMousePos().
+		// Ultra-mega-over slow too, even for 1 pixel,
+		// because the framebuffer is on the GPU.
+		unsigned char data[4];
+		glReadPixels(1024/2, 768/2,1,1, GL_RGBA, GL_UNSIGNED_BYTE, data);
+
+		// Convert the color back to an integer ID
+		int pickedID =
+				data[0] +
+				data[1] * 256 +
+				data[2] * 256*256;
+
+		if (pickedID == 0x00ffffff){ // Full white, must be the background !
+			message = "background";
+		}else{
+			std::ostringstream oss;
+			oss << "mesh " << pickedID;
+			message = oss.str();
+		}
+
+		// Uncomment these lines to see the picking shader in effect
+		//glfwSwapBuffers(window);
+		//continue; // skips the normal rendering
 	}
 }

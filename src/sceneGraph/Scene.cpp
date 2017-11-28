@@ -12,99 +12,119 @@ Scene::Scene()
 
 	//Setup scene
 
-//Test
-
-	/*
-	Model *bunny = new Model("../resources/models/bunny.obj", Window::shaderPhongProgram, &robot2world->m_transform);
-	bunny->m_material = Material{
-			glm::vec3(1.0f, 0.5f, 0.31f),
-			glm::vec3(1.0f, 0.5f, 0.31f),
-			glm::vec3(0.5f, 0.5f, 0.5f),
-			76.8f
+//Track
+	track = new TransformNode();
+	track->m_bVolume = new BoundingSphere( &track->m_transform );
+	Model *redSphereModel = new Model("../resources/models/sphere.obj", Window::shaderPhongProgram, &track->m_transform);
+	redSphereModel->m_material = Material{
+			glm::vec3(0.5f, 0.0f, 0.0f),
+			glm::vec3(1.0f, 0.0f, 0.0f),
+			glm::vec3(0.9f, 0.6f, 0.6f),
+			32.0f
 	};
-	glUseProgram(Window::shaderPhongProgram);
-	bunny->m_material.SetUniform(Window::shaderPhongProgram);
-	robot2world->AddChild( new GeometryNode( bunny ) );
-	robot2world->m_transform.Move( glm::vec3(5.0f, 0.0f, 0.0f) );
-
-	bunny2robot = new TransformNode();
-	bunny2robot->m_transform.Move( glm::vec3(0.0f, 5.0f, 0.0f) );
-	bunny2robot->AddChild( new GeometryNode( bunny ) );
-	robot2world->AddChild( bunny2robot );
-	 */
-//End test
-
-//Robot
-	//Create robot:
-	robot2world = new TransformNode();
-	robot2world->m_bVolume = new BoundingSphere( &robot2world->m_transform );
-
-	floor2world = new TransformNode();
-	Model *head = new Model("../resources/models/robot-parts/head.obj", Window::shaderNormalProgram, &robot2world->m_transform);
-	Model *eyeball = new Model("../resources/models/robot-parts/eyeball.obj", Window::shaderNormalProgram, &robot2world->m_transform);
-	Model *limb = new Model("../resources/models/robot-parts/limb.obj", Window::shaderNormalProgram, &robot2world->m_transform);
-	Model *ant = new Model("../resources/models/robot-parts/antenna.obj", Window::shaderNormalProgram, &robot2world->m_transform);
-	Model *plane = new Model("../resources/models/plane.obj", Window::shaderPhongProgram, &floor2world->m_transform);
-	plane->m_material = Material{
-			glm::vec3(1.0f, 0.5f, 0.31f),
-			glm::vec3(1.0f, 0.5f, 0.31f),
-			glm::vec3(0.5f, 0.5f, 0.5f),
-			76.8f
+	Model *blueSphereModel = new Model("../resources/models/sphere.obj", Window::shaderPhongProgram, &track->m_transform);
+	blueSphereModel->m_material = Material{
+			glm::vec3(0.0f, 0.0f, 0.5f),
+			glm::vec3(0.0f, 0.0f, 1.0f),
+			glm::vec3(0.6f, 0.6f, 0.9f),
+			32.0f
 	};
-	glUseProgram(Window::shaderPhongProgram);
-	plane->m_material.SetUniform(Window::shaderPhongProgram);
 
-	floor2world->AddChild( new GeometryNode( plane ) );
-	floor2world->m_transform.Move( glm::vec3(0.0f, -1.0f, 0.0f) );
-	floor2world->m_transform.Scale( 100.0f );
-	world.AddChild(floor2world);
+	blueSphere = new GeometryNode( blueSphereModel );
+	redSphere = new GeometryNode( redSphereModel );
+//Set 0
+	TransformNode *c00 = new TransformNode();
+	c00->m_transform.m_position = glm::vec3(-2.0f, 1.0f, 0.0f);
+	c00->m_transform.Scale(0.1f);
+	c00->m_bVolume = new BoundingSphere( &c00->m_transform );
+	c00->AddChild( redSphere );
+	TransformNode *c01 = new TransformNode();
+	c01->m_transform.m_position = glm::vec3(-1.0f, 2.0f, 0.0f);
+	c01->m_transform.Scale(0.1f);
+	c01->m_bVolume = new BoundingSphere( &c01->m_transform );
+	c01->AddChild( redSphere );
+	TransformNode *p0 = new TransformNode();
+	p0->m_transform.m_position = glm::vec3(-1.5f, 1.5f, 0.0f);
+	p0->m_transform.Scale(0.1f);
+	p0->m_bVolume = new BoundingSphere( &p0->m_transform );
+	p0->AddChild( blueSphere );
+//Set 1
+	TransformNode *c10 = new TransformNode();
+	c10->m_transform.m_position = glm::vec3(1.0f, 2.0f, 0.0f);
+	c10->m_transform.Scale(0.1f);
+	c10->m_bVolume = new BoundingSphere( &c10->m_transform );
+	c10->AddChild( redSphere );
+	TransformNode *c11 = new TransformNode();
+	c11->m_transform.m_position = glm::vec3(2.0f, 1.0f, 0.0f);
+	c11->m_transform.Scale(0.1f);
+	c11->m_bVolume = new BoundingSphere( &c11->m_transform );
+	c11->AddChild( redSphere );
+	TransformNode *p1 = new TransformNode();
+	p1->m_transform.m_position = glm::vec3(1.5f, 1.5f, 0.0f);
+	p1->m_transform.Scale(0.1f);
+	p1->m_bVolume = new BoundingSphere( &p1->m_transform );
+	p1->AddChild( blueSphere );
+//Set 2
+	TransformNode *c20 = new TransformNode();
+	c20->m_transform.m_position = glm::vec3(2.0f, -1.0f, 0.0f);
+	c20->m_transform.Scale(0.1f);
+	c20->m_bVolume = new BoundingSphere( &c20->m_transform );
+	c20->AddChild( redSphere );
+	TransformNode *c21 = new TransformNode();
+	c21->m_transform.m_position = glm::vec3(1.0f, -2.0f, 0.0f);
+	c21->m_transform.Scale(0.1f);
+	c21->m_bVolume = new BoundingSphere( &c21->m_transform );
+	c21->AddChild( redSphere );
+	TransformNode *p2 = new TransformNode();
+	p2->m_transform.m_position = glm::vec3(1.5f, -1.5f, 0.0f);
+	p2->m_transform.Scale(0.1f);
+	p2->m_bVolume = new BoundingSphere( &p2->m_transform );
+	p2->AddChild( blueSphere );
+//Set 3
+	TransformNode *c30 = new TransformNode();
+	c30->m_transform.m_position = glm::vec3(-1.0f, -2.0f, 0.0f);
+	c30->m_transform.Scale(0.1f);
+	c30->m_bVolume = new BoundingSphere( &c30->m_transform );
+	c30->AddChild( redSphere );
+	TransformNode *c31 = new TransformNode();
+	c31->m_transform.m_position = glm::vec3(-2.0f, -1.0f, 0.0f);
+	c31->m_transform.Scale(0.1f);
+	c31->m_bVolume = new BoundingSphere( &c31->m_transform );
+	c31->AddChild( redSphere );
+	TransformNode *p3 = new TransformNode();
+	p3->m_transform.m_position = glm::vec3(-1.5f, -1.5f, 0.0f);
+	p3->m_transform.Scale(0.1f);
+	p3->m_bVolume = new BoundingSphere( &p3->m_transform );
+	p3->AddChild( blueSphere );
 
-	//Limb
-	limb2robot = new TransformNode( );
-	limb2robot->m_transform.m_position = glm::vec3(-0.8f, 1.0f, 0.0f);
-	limb2robot->AddChild( new GeometryNode( limb ) );
-	robot2world->AddChild(limb2robot);
+//Set 3
+	BezierHandleNode *handle3 = new BezierHandleNode(&c30->m_transform, &p3->m_transform, &c31->m_transform);
+	handle3->AddChild(c30);
+	handle3->AddChild(p3);
+	handle3->AddChild(c31);
+	track->AddChild(handle3);
+//Set 2
+	BezierHandleNode *handle2 = new BezierHandleNode(&c20->m_transform, &p2->m_transform, &c21->m_transform, handle3);
+	handle2->AddChild(c20);
+	handle2->AddChild(p2);
+	handle2->AddChild(c21);
+	track->AddChild(handle2);
+//Set 1
+	BezierHandleNode *handle1 = new BezierHandleNode(&c10->m_transform, &p1->m_transform, &c11->m_transform, handle2);
+	handle1->AddChild(c10);
+	handle1->AddChild(p1);
+	handle1->AddChild(c11);
+	track->AddChild(handle1);
+//Set 0
+	BezierHandleNode *handle0 = new BezierHandleNode(&c00->m_transform, &p0->m_transform, &c01->m_transform, handle1);
+	handle0->AddChild(c00);
+	handle0->AddChild(p0);
+	handle0->AddChild(c01);
+	handle3->SetNext( handle0 );
 
-	//Body
-	body2robot = new TransformNode( );
-	body2robot->AddChild( new GeometryNode( eyeball ) );
-	robot2world->AddChild(body2robot);
-
-	//Head
-	head2robot = new TransformNode( );
-	head2robot->m_transform.m_position = glm::vec3(0.0f, 1.25f, 0.0f);
-	head2robot->m_transform.m_rotation = glm::vec3(-90.0f, 0.0f, 0.0f);
-	head2robot->m_transform.Scale(0.75f);
-	head2robot->AddChild( new GeometryNode( head ) );
-	robot2world->AddChild(head2robot);
-
-	//Antenna
-	ant2head = new TransformNode( );
-	ant2head->m_transform.m_position = glm::vec3(0.0f, 0.0f, 0.25f);
-	ant2head->m_transform.m_rotation = glm::vec3(0.0f, 45.0f, 0.0f);
-	ant2head->m_transform.Scale(0.75f);
-	ant2head->AddChild( new GeometryNode( ant ) );
-	head2robot->AddChild(ant2head);
-
-	//Eye
-	eye2head = new TransformNode( );
-	eye2head->m_transform.m_position = glm::vec3(0.0f, -0.75f, 0.25f);
-	eye2head->m_transform.Scale(0.2f);
-	eye2head->AddChild( new GeometryNode( eyeball ) );
-	head2robot->AddChild(eye2head);
-//End robot
-
-// Robot Army (15 Points)
-	//Amount, 1 = 100
-	float amount = 5;
-	for( int x = -20*amount; x < 20*amount ; x = x + 4 ) {
-		for( int z = -20*amount; z < 20*amount ; z = z + 4 ) {
-			TransformNode *next = new TransformNode( *robot2world );
-			next->m_transform.m_position = glm::vec3( x, 0, z );
-			next->m_bVolume->m_transform->m_position = glm::vec3( x, 0, z );
-			world.AddChild( next );
-		}
-	}
+	track->AddChild(handle0);
+	world.AddChild( track );
+//End track
 
 //Lighting
 	light2world = new TransformNode(  );
@@ -126,17 +146,6 @@ void Scene::Draw()
 	{
 		return;
 	}
-//Test
-	/*
-	robot2world->m_transform.Rotate( glm::vec3(0, 1.0f, 0) );
-	bunny2robot->m_transform.Rotate( glm::vec3(0, 1.0f, 0) );
-	 */
-//End test
-	body2robot->m_transform.Rotate( glm::vec3(-1.0f, 0.0f, 0.0f) );
-	head2robot->m_transform.Rotate( glm::vec3(0.0f, 0.0f, 1.0f) );
-	eye2head->m_transform.Rotate( glm::vec3(0.0f, 0.0f, 1.0f) );
-	//limb2robot->m_transform.Rotate( glm::vec3(1.0f, 0.0f, 0.0f) );
-
 	world.Draw( glm::mat4(1.0f) );
 }
 
@@ -148,48 +157,4 @@ void Scene::Update()
 	}
 
 	world.Update();
-
-	if(bullets2world != nullptr)
-	{
-		bullets2world->m_transform.Move( glm::vec3(0.0f, 0.0f, 1.0f) );
-
-		if(bullets2world->m_transform.m_position.z > 100.0f)
-		{
-			//Disable lights
-			glUseProgram(Window::shaderPhongProgram);
-			GLint lightCounterLoc = glGetUniformLocation(Window::shaderPhongProgram, "nrLights" );
-			glUniform1ui(lightCounterLoc, 0);
-
-			world.RemoveChild(bullets2world);
-			delete(bullets2world);
-			bullets2world = nullptr;
-		}
-	}
-}
-
-void Scene::Fire()
-{
-	if(bullets2world == nullptr)
-	{
-		//Add bullet node
-		bullets2world = new TransformNode();
-		bullets2world->m_transform.m_position = glm::vec3(-0.8f, 1.0f, 0.0f);
-		for(Node *n : world.m_children)
-		{
-			TransformNode *node = (TransformNode *)n;
-			TransformNode *bullet = new TransformNode( *light2world );
-			bullet->m_transform.m_position = glm::vec3( node->m_transform.m_position );
-			bullets2world->AddChild( bullet );
-		}
-		world.AddChild(bullets2world);
-
-		//Update shader
-		glUseProgram(Window::shaderPhongProgram);
-		for(int i = 0; i < 100; i++)
-		{
-			pointLightObj->m_pointLight.SetUniform( Window::shaderPhongProgram, i );
-		}
-		GLint lightCounterLoc = glGetUniformLocation(Window::shaderPhongProgram, "nrLights" );
-		glUniform1ui(lightCounterLoc, 100);
-	}
 }

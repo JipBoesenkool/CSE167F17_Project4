@@ -60,6 +60,7 @@ void Model::Draw( glm::mat4 m )
 	glUseProgram(m_shader);
 	GLint uModel 		= glGetUniformLocation(m_shader, "model");
 	glUniformMatrix4fv(uModel, 1, GL_FALSE, &m[0][0]);
+	m_material.SetUniform(m_shader);
 
 	// Now Draw the cube. We simply need to bind the VAO associated with it.
 	glBindVertexArray(m_VAO);

@@ -26,6 +26,7 @@ public:
 	static bool cull;
 	static bool NDEBUG;
 	static Camera camera;
+	static GLint shaderLineProgram;
 	static GLint shaderSimpleProgram;
 	static GLint shaderNormalProgram;
 	static GLint shaderVisualLightProgram;

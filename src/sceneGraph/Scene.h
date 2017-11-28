@@ -32,10 +32,15 @@ private:
 	//Main node
 	TransformNode world;
 	TransformNode *track;
+	TransformNode *cart;
 	GeometryNode *redSphere;
 	GeometryNode *blueSphere;
+	GeometryNode *metalicSphere;
 
-	GeometryNode *cart;
+	BezierHandleNode *handle0;
+	BezierHandleNode *handle1;
+	BezierHandleNode *handle2;
+	BezierHandleNode *handle3;
 
 	TransformNode *light2world;
 	PointLightModel *pointLightObj;

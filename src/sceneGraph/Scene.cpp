@@ -29,6 +29,13 @@ Scene::Scene()
 			glm::vec3(0.6f, 0.6f, 0.9f),
 			32.0f
 	};
+	Model *metalicSphereModel = new Model("../resources/models/sphere.obj", Window::shaderEnvProgram, &track->m_transform);
+	metalicSphereModel->m_material = Material{
+			glm::vec3(0.0f, 0.0f, 0.5f),
+			glm::vec3(0.0f, 0.0f, 1.0f),
+			glm::vec3(0.6f, 0.6f, 0.9f),
+			32.0f
+	};
 
 	blueSphere = new GeometryNode( blueSphereModel );
 	redSphere = new GeometryNode( redSphereModel );
@@ -123,7 +130,7 @@ Scene::Scene()
 	c31->m_cpPaired = c30;
 
 //Set 3
-	BezierHandleNode *handle3 = new BezierHandleNode(&c30->m_transform, &p3->m_transform, &c31->m_transform);
+	handle3 = new BezierHandleNode(&c30->m_transform, &p3->m_transform, &c31->m_transform);
 	p3->m_parent = handle3;
 	c30->m_parent = handle3;
 	c31->m_parent = handle3;
@@ -133,7 +140,7 @@ Scene::Scene()
 	handle3->AddChild(c31);
 	track->AddChild(handle3);
 //Set 2
-	BezierHandleNode *handle2 = new BezierHandleNode(&c20->m_transform, &p2->m_transform, &c21->m_transform, handle3);
+	handle2 = new BezierHandleNode(&c20->m_transform, &p2->m_transform, &c21->m_transform, handle3);
 	p2->m_parent = handle2;
 	c20->m_parent = handle2;
 	c21->m_parent = handle2;
@@ -144,7 +151,7 @@ Scene::Scene()
 	handle2->AddChild(c21);
 	track->AddChild(handle2);
 //Set 1
-	BezierHandleNode *handle1 = new BezierHandleNode(&c10->m_transform, &p1->m_transform, &c11->m_transform, handle2);
+	handle1 = new BezierHandleNode(&c10->m_transform, &p1->m_transform, &c11->m_transform, handle2);
 	p1->m_parent = handle1;
 	c10->m_parent = handle1;
 	c11->m_parent = handle1;
@@ -155,7 +162,7 @@ Scene::Scene()
 	handle1->AddChild(c11);
 	track->AddChild(handle1);
 //Set 0
-	BezierHandleNode *handle0 = new BezierHandleNode(&c00->m_transform, &p0->m_transform, &c01->m_transform, handle1);
+	handle0 = new BezierHandleNode(&c00->m_transform, &p0->m_transform, &c01->m_transform, handle1);
 	p0->m_parent = handle0;
 	c00->m_parent = handle0;
 	c01->m_parent = handle0;
@@ -169,8 +176,18 @@ Scene::Scene()
 	handle3->SetNext( handle0 );
 
 	track->AddChild(handle0);
-	world.AddChild( track );
+
 //End track
+//Plot player
+	cart = new TransformNode(  );
+	cart->m_transform.m_position = handle0->BezierCurvePoint(0.5f);
+	cart->m_transform.Scale(0.25f);
+	cart->m_bVolume = new BoundingSphere( &cart->m_transform );
+	cart->AddChild( new GeometryNode( metalicSphereModel ) );
+	track->AddChild( cart );
+//End player
+
+	world.AddChild( track );
 
 //Lighting
 	light2world = new TransformNode(  );
@@ -204,7 +221,7 @@ void Scene::Update()
 	{
 		return;
 	}
-
+	cart->m_transform.SetPosition( handle0->BezierCurvePoint(0.5f) );
 	world.Update();
 }
 

@@ -134,6 +134,13 @@ void BezierHandleNode::CalculateBezierCurve()
 	}
 }
 
+glm::vec3 BezierHandleNode::BezierCurvePoint(float t)
+{
+	glm::vec3 p2 = m_next->m_c0->m_position;
+	glm::vec3 p3 = m_next->m_p0->m_position;
+	return BezierCurvePoint(t, m_p0->m_position, m_c1->m_position, p2, p3);
+}
+
 glm::vec3 BezierHandleNode::BezierCurvePoint(float t, glm::vec3 P0, glm::vec3 P1, glm::vec3 P2, glm::vec3 P3)
 {
 	return glm::vec3(

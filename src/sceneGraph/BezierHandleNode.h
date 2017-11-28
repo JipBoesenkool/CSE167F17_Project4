@@ -59,6 +59,7 @@ public:
 	void SetNext( BezierHandleNode *next );
 
 	void CalculateBezierCurve();
+	glm::vec3 BezierCurvePoint(float t);
 	glm::vec3 BezierCurvePoint(float t, glm::vec3 P0, glm::vec3 P1, glm::vec3 P2, glm::vec3 P3);
 	float BezierCurvePoint(float t, float P0, float P1, float P2, float P3);
 };
